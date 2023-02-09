@@ -8,8 +8,8 @@ plugins {
 }
 
 def publishToDocker = Boolean.parseBoolean(System.getenv().getOrDefault('PUBLISH_TO_DOCKER', 'false'))
-def dockerUsername = Boolean.parseBoolean(System.getenv().getOrDefault('DOCKER_USERNAME', 'user'))
-def dockerPassword = Boolean.parseBoolean(System.getenv().getOrDefault('DOCKER_PASSWORD', 'pass'))
+def dockerUsername = System.getenv().getOrDefault('DOCKER_USERNAME', 'user')
+def dockerPassword = System.getenv().getOrDefault('DOCKER_PASSWORD', 'pass')
 
 group = 'biz.digissance'
 version = semver.version as String
