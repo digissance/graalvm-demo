@@ -41,8 +41,10 @@ bootBuildImage {
     imageName = "ghcr.io/digissance/graalvm-demo"
     publish = publishToDocker
     tags = ["ghcr.io/digissance/graalvm-demo:${semver.version}"]
-    username = dockerUsername
-    password = dockerPassword
+    docker {
+        username = dockerUsername
+        password = dockerPassword
+    }
 //    docker {
 //        publishRegistry {
 //            username = "${art_user}"
