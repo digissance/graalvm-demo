@@ -10,6 +10,7 @@ plugins {
 def publishToDocker = Boolean.parseBoolean(System.getenv().getOrDefault('PUBLISH_TO_DOCKER', 'false'))
 def dockerUsername = System.getenv().getOrDefault('DOCKER_USERNAME', 'user')
 def dockerPassword = System.getenv().getOrDefault('DOCKER_PASSWORD', 'pass')
+def gitCommit = System.getenv().getOrDefault('GIT_COMMIT', 'commit')
 
 group = 'biz.digissance'
 version = semver.version as String
@@ -41,7 +42,7 @@ tasks.named('test') {
 bootBuildImage {
     imageName = "ghcr.io/digissance/graalvm-demo"
     publish = publishToDocker
-    tags = ["ghcr.io/digissance/graalvm-demo:${semver.version}"]
+    tags = ["ghcr.io/digissance/graalvm-demo:${semver.version}","ghcr.io/digissance/graalvm-demo:${gitCommit}"]
     docker {
         publishRegistry {
             username = dockerUsername

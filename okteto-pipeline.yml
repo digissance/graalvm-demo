@@ -1,2 +1,2 @@
 deploy:
-  - helm upgrade --install graalvm-demo chart --set image.tag=${APP_VERSION}
+  - helm upgrade --install graalvm-demo chart --set image.tag=${OKTETO_GIT_COMMIT}

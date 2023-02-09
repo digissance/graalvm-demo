@@ -6,8 +6,8 @@
 name: Create and publish a Docker image
 
 on:
-  push:
-    branches: [ 'main' ]
+  pull_request:
+    branches: [ main ]
 
 env:
   REGISTRY: ghcr.io
@@ -48,22 +48,7 @@ jobs:
         with:
           arguments: build
 
-      - name: Create release with Gradle
-        uses: gradle/gradle-build-action@v2
-        with:
-          arguments: releaseVersion --no-commit
-
-      - name: Print version with Gradle
-        uses: gradle/gradle-build-action@v2
-        with:
-          arguments: printVersion
-
       - name: build image and publish
         uses: gradle/gradle-build-action@v2
         with:
           arguments: bootBuildImage
-
-      - name: Commit release
-        run: |
-          git config --global push.followTags true
-          git push
