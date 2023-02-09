@@ -5,6 +5,7 @@ plugins {
     id 'org.graalvm.buildtools.native' version '0.9.18'
     id 'com.github.jmongard.git-semver-plugin'
     id 'com.adarshr.test-logger'
+    id 'com.google.cloud.tools.jib' version '3.2.0'
 }
 
 def publishToDocker = Boolean.parseBoolean(System.getenv().getOrDefault('PUBLISH_TO_DOCKER', 'false'))
@@ -42,18 +43,18 @@ tasks.named('test') {
 bootBuildImage {
     imageName = "ghcr.io/digissance/graalvm-demo"
     publish = publishToDocker
-    tags = ["ghcr.io/digissance/graalvm-demo:${semver.version}","ghcr.io/digissance/graalvm-demo:${gitCommit}"]
+    tags = ["ghcr.io/digissance/graalvm-demo:${semver.version}"]
     docker {
         publishRegistry {
             username = dockerUsername
             password = dockerPassword
         }
     }
-//    docker {
-//        publishRegistry {
-//            username = "${art_user}"
-//            password = "${art_password}"
-//            url = "${art_contextUrl}/docker-repo"
-//        }
-//    }
+}
+
+jib {
+    to {
+        image = "ghcr.io/digissance/graalvm-demo"
+        tags = [semver.version, gitCommit]
+    }
 }
