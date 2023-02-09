@@ -65,4 +65,5 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           name: pr-${{ github.event.number }}-${{ github.actor }}
+          variables: APP_VERSION=${{ github.sha }}
           timeout: 15m
