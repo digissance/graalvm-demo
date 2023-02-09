@@ -35,6 +35,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
+          token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0
 
       - name: Set up JDK 17
@@ -53,16 +54,16 @@ jobs:
         with:
           arguments: jib
 
-#      - name: Context
-#        uses: okteto/context@latest
-#        with:
-#          token: ${{ secrets.OKTETO_TOKEN }}
-#
-#      - name: Deploy preview environment
-#        uses: okteto/deploy-preview@latest
-#        env:
-#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#        with:
-#          name: pr-${{ github.event.number }}-${{ github.actor }}
-#          variables: APP_VERSION=${{ github.sha }}
-#          timeout: 15m
+      - name: Context
+        uses: okteto/context@latest
+        with:
+          token: ${{ secrets.OKTETO_TOKEN }}
+
+      - name: Deploy preview environment
+        uses: okteto/deploy-preview@latest
+        env:
+          GITHUB_TOKEN: ${{ secrets.OKTETO_PREVIEW_TOKEN }}
+        with:
+          name: pr-${{ github.event.number }}-${{ github.actor }}
+          variables: APP_VERSION=${{ github.sha }}
+          timeout: 15m
