@@ -4,6 +4,8 @@ metadata:
   name: {{ include "graalvm-demo.fullname" . }}
   labels:
     {{- include "graalvm-demo.labels" . | nindent 4 }}
+  annotations:
+    dev.okteto.com/auto-ingress: "true"
 spec:
   type: {{ .Values.service.type }}
   ports:
