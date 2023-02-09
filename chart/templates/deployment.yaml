@@ -38,10 +38,12 @@ spec:
               containerPort: 8080
               protocol: TCP
           livenessProbe:
+            periodSeconds: 40
             httpGet:
               path: /actuator/health/liveness
               port: http
           readinessProbe:
+            periodSeconds: 40
             httpGet:
               path: /actuator/health/readiness
               port: http
