@@ -7,6 +7,8 @@ plugins {
     id 'com.adarshr.test-logger'
 }
 
+def publishToDocker = Boolean.parseBoolean(System.getenv().getOrDefault('PUBLISH_TO_DOCKER', 'false'))
+
 group = 'biz.digissance'
 version = semver.version as String
 sourceCompatibility = '17'
@@ -35,7 +37,7 @@ tasks.named('test') {
 
 bootBuildImage {
     imageName = "ghcr.io/digissance/graalvm-demo"
-    publish = false
+    publish = publishToDocker
     tags = ["ghcr.io/digissance/graalvm-demo:${semver.version}"]
 //    docker {
 //        publishRegistry {
