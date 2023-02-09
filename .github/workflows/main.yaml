@@ -56,9 +56,9 @@ jobs:
           arguments: printVersion
 
       - name: Commit release
-          run: |
-            git config --global push.followTags true
-            git push
+        run: |
+          git config --global push.followTags true
+          git push
 
       - name: Print version with Gradle
         uses: gradle/gradle-build-action@v2
