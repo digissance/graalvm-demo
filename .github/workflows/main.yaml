@@ -13,6 +13,8 @@ env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
   PUBLISH_TO_DOCKER: true
+  DOCKER_USERNAME: ${{ github.actor }}
+  DOCKER_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
 
 jobs:
   build-and-push-image:
@@ -60,7 +62,7 @@ jobs:
           git config --global push.followTags true
           git push
 
-      - name: Print version with Gradle
+      - name: build image and publish
         uses: gradle/gradle-build-action@v2
         with:
           arguments: bootBuildImage

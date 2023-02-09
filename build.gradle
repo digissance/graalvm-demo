@@ -8,6 +8,8 @@ plugins {
 }
 
 def publishToDocker = Boolean.parseBoolean(System.getenv().getOrDefault('PUBLISH_TO_DOCKER', 'false'))
+def dockerUsername = Boolean.parseBoolean(System.getenv().getOrDefault('DOCKER_USERNAME', 'user'))
+def dockerPassword = Boolean.parseBoolean(System.getenv().getOrDefault('DOCKER_PASSWORD', 'pass'))
 
 group = 'biz.digissance'
 version = semver.version as String
@@ -39,6 +41,8 @@ bootBuildImage {
     imageName = "ghcr.io/digissance/graalvm-demo"
     publish = publishToDocker
     tags = ["ghcr.io/digissance/graalvm-demo:${semver.version}"]
+    username = dockerUsername
+    password = dockerPassword
 //    docker {
 //        publishRegistry {
 //            username = "${art_user}"
