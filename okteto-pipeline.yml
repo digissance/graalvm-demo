@@ -1,0 +1,2 @@
+deploy:
+  - helm upgrade --install graalvm-demo chart --set image.tag=${APP_VERSION}
