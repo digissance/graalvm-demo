@@ -57,12 +57,12 @@ jobs:
         with:
           arguments: printVersion
 
-      - name: Commit release
-        run: |
-          git config --global push.followTags true
-          git push
-
       - name: build image and publish
         uses: gradle/gradle-build-action@v2
         with:
           arguments: bootBuildImage
+
+      - name: Commit release
+        run: |
+          git config --global push.followTags true
+          git push
