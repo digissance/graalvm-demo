@@ -67,4 +67,3 @@ jobs:
           name: pr-${{ github.event.number }}-${{ github.actor }}
           variables: APP_VERSION=${{ github.sha }}
           timeout: 15m
-          scope: global
