@@ -11,7 +11,9 @@ import jakarta.persistence.Id;
 import jakarta.persistence.IdClass;
 import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
+import jakarta.persistence.PrePersist;
 import java.util.Objects;
+import java.util.UUID;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -38,6 +40,11 @@ public abstract class PartyEntity extends BaseEntity {
             name = "identifier_seq",
             strategy = "biz.digissance.graalvmdemo.jpa.UUIDSequenceIdGenerator")
     private String identifier;
+
+//    @PrePersist
+//    private void createIdentifier(){
+//        this.identifier = UUID.randomUUID().toString();
+//    }
 }
 
 /*

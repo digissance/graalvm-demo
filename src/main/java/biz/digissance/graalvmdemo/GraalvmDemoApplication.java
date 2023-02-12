@@ -1,5 +1,6 @@
 package biz.digissance.graalvmdemo;
 
+import biz.digissance.graalvmdemo.jpa.UUIDSequenceIdGenerator;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class GraalvmDemoApplication {
 
     public static void main(String[] args) {
+        final var idGenerator = new UUIDSequenceIdGenerator();
         SpringApplication.run(GraalvmDemoApplication.class, args);
     }
 
