@@ -1,12 +1,16 @@
-package com.liccioni.webmvcsecurityoauth2client.jpa;
+package biz.digissance.graalvmdemo.jpa;
 
+import jakarta.persistence.PostLoad;
+import jakarta.persistence.PostPersist;
+import jakarta.persistence.PostRemove;
+import jakarta.persistence.PostUpdate;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreRemove;
+import jakarta.persistence.PreUpdate;
+import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.security.core.context.SecurityContextHolder;
-
-import javax.persistence.*;
-import java.util.Objects;
 
 @Slf4j
 public class BaseEntityListener {

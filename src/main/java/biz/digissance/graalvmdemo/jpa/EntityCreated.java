@@ -1,4 +1,4 @@
-package com.liccioni.webmvcsecurityoauth2client.jpa;
+package biz.digissance.graalvmdemo.jpa;
 
 import lombok.Data;
 

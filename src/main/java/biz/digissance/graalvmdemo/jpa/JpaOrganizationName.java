@@ -6,10 +6,10 @@ import lombok.Data;
 
 @Data
 @Embeddable
-public class JpaPersonName {
+public class JpaOrganizationName {
 
-    private String familyName;
-    private String givenName;
+    private String organizationName;
+    private String use;
     private Instant validFrom;
     private Instant validTo;
 }
