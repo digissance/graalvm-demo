@@ -1,0 +1,24 @@
+spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:h2:mem:25b93fa3-5aeb-479e-820c-56a42975b46b}
+    username: ${SPRING_DATASOURCE_USERNAME:SA}
+    password: ${SPRING_DATASOURCE_PASSWORD:SA}
+  data:
+    rest:
+      basePath: /api/account
+  application:
+    name: account-service
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: ALWAYS
+      probes:
+        enabled: true
