@@ -35,16 +35,12 @@ public abstract class PartyEntity extends BaseEntity {
 
     @Id
     @Column(unique = true, nullable = false)
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "identifier_seq")
-    @GenericGenerator(
-            name = "identifier_seq",
-            strategy = "biz.digissance.graalvmdemo.jpa.UUIDSequenceIdGenerator")
     private String identifier;
 
-//    @PrePersist
-//    private void createIdentifier(){
-//        this.identifier = UUID.randomUUID().toString();
-//    }
+    @PrePersist
+    private void createIdentifier(){
+        this.identifier = UUID.randomUUID().toString();
+    }
 }
 
 /*
