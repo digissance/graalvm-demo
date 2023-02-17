@@ -9,21 +9,20 @@ import jakarta.persistence.PreRemove;
 import jakarta.persistence.PreUpdate;
 import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.beans.factory.annotation.Configurable;
 
 @Slf4j
+@Configurable
 public class BaseEntityListener {
 
-    @Autowired
-    private ApplicationEventPublisher publisher;
+    private final ApplicationEventPublisherSupplier handler = ApplicationEventPublisherSupplier.INSTANCE;
 
     @PrePersist
     @PreUpdate
     @PreRemove
     private void beforeAnyUpdate(BaseEntity baseEntity) {
         if (Objects.isNull(baseEntity.getId())) {
-            log.info("[ENTITY AUDIT] About to add a entity");
+            log.info("[ENTITY AUDIT] About to add a entity" +this);
         } else {
             log.info("[ENTITY AUDIT] About to update/delete entity: " + baseEntity.getId());
         }
@@ -38,7 +37,8 @@ public class BaseEntityListener {
 
     @PostPersist
     private void afterPersist(BaseEntity baseEntity) {
-        publisher.publishEvent(new EntityCreated(baseEntity));
+        log.info("[ENTITY AUDIT] About to publish event..." +this);
+        handler.getPublisher().publishEvent(new EntityCreated(baseEntity));
     }
 
     @PostLoad

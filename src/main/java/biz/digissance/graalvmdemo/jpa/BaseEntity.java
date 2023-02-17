@@ -7,16 +7,21 @@ import jakarta.persistence.EntityListeners;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.IdClass;
 import jakarta.persistence.MappedSuperclass;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Version;
-import java.util.Objects;
+import java.time.Instant;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.SuperBuilder;
-import org.hibernate.Hibernate;
+import org.springframework.data.annotation.CreatedBy;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedBy;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Getter
 @Setter
@@ -25,7 +30,7 @@ import org.hibernate.Hibernate;
 @MappedSuperclass
 //@NoArgsConstructor
 @RequiredArgsConstructor
-@EntityListeners(BaseEntityListener.class)
+@EntityListeners({BaseEntityListener.class, AuditingEntityListener.class})
 public abstract class BaseEntity {
 
     @Id
@@ -36,6 +41,19 @@ public abstract class BaseEntity {
 
     @Version
     private Long version;
+
+    @CreatedBy
+    private String createdBy;
+
+    @Column(nullable = false, updatable = false)
+    @CreatedDate
+    private Instant createdDate;
+
+    @LastModifiedBy
+    private String modifiedBy;
+
+    @LastModifiedDate
+    private Instant modifiedDate;
 }
 
 /*
