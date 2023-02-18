@@ -15,7 +15,7 @@ import lombok.experimental.SuperBuilder;
 @ToString
 @SuperBuilder
 @RequiredArgsConstructor
-@DiscriminatorValue("Organization")
+@DiscriminatorValue("organization")
 public class OrganizationEntity extends PartyEntity {
     @Embedded
     private JpaOrganizationName organizationName;

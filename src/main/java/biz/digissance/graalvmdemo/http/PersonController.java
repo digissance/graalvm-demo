@@ -26,7 +26,7 @@ public class PersonController {
     }
 
     @PostMapping
-    @PreAuthorize("hasPermission(#person,'WRITE')")
+//    @PreAuthorize("hasPermission(#person,'WRITE')")
     public PersonEntity createTestEntities(@Valid @RequestBody PersonDTO person) {
         log.info("Request received: " + person);
         PersonEntity p = repository.save(PersonEntity.builder()
