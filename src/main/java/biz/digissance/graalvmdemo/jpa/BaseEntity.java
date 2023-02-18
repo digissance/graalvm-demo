@@ -35,8 +35,9 @@ public abstract class BaseEntity {
 
     @Id
     @Column(name = "pk")
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "generator")
-    @SequenceGenerator(name = "generator", sequenceName = "seq")
+//    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "generator")
+//    @SequenceGenerator(name = "generator", sequenceName = "seq")
+    @GeneratedValue
     private Long id;
 
     @Version

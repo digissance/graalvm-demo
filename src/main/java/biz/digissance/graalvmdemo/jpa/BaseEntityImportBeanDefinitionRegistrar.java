@@ -2,6 +2,7 @@ package biz.digissance.graalvmdemo.jpa;
 
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.dialect.PostgreSQLPGObjectJdbcType;
 import org.springframework.aot.hint.MemberCategory;
 import org.springframework.aot.hint.RuntimeHints;
 import org.springframework.aot.hint.RuntimeHintsRegistrar;
@@ -20,6 +21,12 @@ public class BaseEntityImportBeanDefinitionRegistrar implements RuntimeHintsRegi
                                 MemberCategory.DECLARED_FIELDS,
                                 MemberCategory.INTROSPECT_DECLARED_METHODS,
                                 MemberCategory.INVOKE_DECLARED_METHODS));
+
+
+        hints.reflection().registerTypeIfPresent(classLoader, "org.postgresql.util.PGobject",
+                (hint) -> hint.withMembers(MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS, MemberCategory.INTROSPECT_PUBLIC_METHODS)
+                        .onReachableType(PostgreSQLPGObjectJdbcType.class));
+
         log.info("Registering BaseEntityListener runtime hints");
     }
 }

@@ -1,0 +1,20 @@
+version: "3.9"
+
+services:
+  database:
+    image: 'postgres:13.1-alpine'
+    environment:
+      POSTGRES_USER: graalvm-demo
+      POSTGRES_PASSWORD: "Postgr@s321!"
+    ports:
+      - "5432:5432"
+  auth-server:
+    image: "ghcr.io/digissance/graalvm-demo:latest"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://database:5432/graalvm-demo
+      SPRING_DATASOURCE_USERNAME: graalvm-demo
+      SPRING_DATASOURCE_PASSWORD: "Postgr@s321!"
+    ports:
+      - "8080:8080"
+    depends_on:
+      - database
