@@ -9,7 +9,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.util.Assert;
 
 @SpringBootTest
-@ActiveProfiles("dev")
+@ActiveProfiles("test")
 class TestEntityTest {
 
     @Autowired
