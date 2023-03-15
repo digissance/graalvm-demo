@@ -15,7 +15,6 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 @SpringBootApplication(proxyBeanMethods = false)
-@EnableJpaAuditing(auditorAwareRef = "auditorProvider")
 @ImportRuntimeHints(BaseEntityImportBeanDefinitionRegistrar.class)
 public class GraalvmDemoApplication {
 

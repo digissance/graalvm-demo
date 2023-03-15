@@ -65,5 +65,5 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.OKTETO_PREVIEW_TOKEN }}
         with:
           name: pr-${{ github.event.number }}-${{ github.actor }}
-          variables: APP_VERSION=${{ github.sha }}
+          variables: APP_VERSION=${{ github.sha }},SPRING_PROFILE=dev
           timeout: 15m

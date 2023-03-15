@@ -40,6 +40,8 @@ spec:
               value: {{ .Values.app.database.username }}
             - name: "SPRING_DATASOURCE_PASSWORD"
               value: {{ .Values.app.database.password }}
+            - name: "SPRING_PROFILES_ACTIVE"
+              value: {{ .Values.app.spring.profile }}
           ports:
             - name: http
               containerPort: 8080

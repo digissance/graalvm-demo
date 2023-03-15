@@ -14,6 +14,7 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://database:5432/graalvm-demo
       SPRING_DATASOURCE_USERNAME: graalvm-demo
       SPRING_DATASOURCE_PASSWORD: "Postgr@s321!"
+      SPRING_PROFILES_ACTIVE: dev
     ports:
       - "8080:8080"
     depends_on:
