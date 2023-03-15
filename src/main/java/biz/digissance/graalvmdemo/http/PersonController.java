@@ -1,12 +1,12 @@
 package biz.digissance.graalvmdemo.http;
 
-import biz.digissance.graalvmdemo.jpa.JpaPersonName;
+import biz.digissance.graalvmdemo.domain.PersonRepository;
 import biz.digissance.graalvmdemo.jpa.PersonEntity;
-import biz.digissance.graalvmdemo.jpa.PersonRepository;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.access.prepost.PreAuthorize;
+import net.liccioni.archetypes.party.Person;
+import net.liccioni.archetypes.party.PersonName;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -26,11 +26,11 @@ public class PersonController {
     }
 
     @PostMapping
-    @PreAuthorize("hasPermission(#person,'WRITE')")
-    public PersonEntity createTestEntities(@Valid @RequestBody PersonDTO person) {
+//    @PreAuthorize("hasPermission(#person,'WRITE')")
+    public Person createTestEntities(@Valid @RequestBody PersonDTO person) {
         log.info("Request received: " + person);
-        PersonEntity p = repository.save(PersonEntity.builder()
-                .personName(JpaPersonName.builder()
+        var p = repository.save(Person.builder()
+                .personName(PersonName.builder()
                         .givenName(person.getName())
                         .familyName(person.getLastname())
                         .build())
@@ -40,12 +40,12 @@ public class PersonController {
     }
 
     @GetMapping
-    public List<PersonEntity> getPersons() {
+    public List<Person> getPersons() {
         return repository.findAll();
     }
-
-    @GetMapping("/{identifier}")
-    public PersonEntity getPerson(@PathVariable String identifier) {
-        return repository.findByIdentifier(identifier).orElseThrow();
-    }
+//
+//    @GetMapping("/{identifier}")
+//    public PersonEntity getPerson(@PathVariable String identifier) {
+//        return repository.findByIdentifier(identifier).orElseThrow();
+//    }
 }

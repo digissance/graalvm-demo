@@ -9,6 +9,7 @@ import org.springframework.security.access.expression.method.MethodSecurityExpre
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.Authentication;
@@ -17,11 +18,17 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.context.NullSecurityContextRepository;
 
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
+
+    @Bean
+    public WebSecurityCustomizer webSecurityCustomizer() {
+        return (web) -> web.debug(true);
+    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -38,9 +45,17 @@ public class SecurityConfig {
 
         return http
                 .csrf(AbstractHttpConfigurer::disable)
-                .httpBasic()
-                .and()
-                .sessionManagement(p -> p.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .anonymous().disable()
+//                .httpBasic()
+//                .and()
+                .sessionManagement().disable()
+                .securityContext().disable()//.securityContextRepository(new NullSecurityContextRepository()).and()
+                .requestCache().disable()
+                .logout().disable()
+                .exceptionHandling().disable()
+                .headers().disable()
+//                .sessionManagement(p -> p.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+//                .authorizeHttpRequests().anyRequest().permitAll().and()
                 .build();
     }
 

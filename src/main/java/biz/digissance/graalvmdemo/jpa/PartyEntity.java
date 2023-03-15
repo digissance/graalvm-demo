@@ -29,7 +29,7 @@ import org.hibernate.annotations.GenericGenerator;
 @SuperBuilder
 @RequiredArgsConstructor
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-@DiscriminatorColumn(name = "Party_Type")
+@DiscriminatorColumn(name = "party_type")
 @IdClass(PartyPK.class)
 public abstract class PartyEntity extends BaseEntity {
 

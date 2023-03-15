@@ -9,11 +9,11 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.util.Assert;
 
 @SpringBootTest
-@ActiveProfiles("dev")
+@ActiveProfiles("test")
 class TestEntityTest {
 
     @Autowired
-    private PersonRepository personRepository;
+    private JpaPersonRepository jpaPersonRepository;
 
     @Test
     void shouldFindEntity() {
@@ -21,7 +21,7 @@ class TestEntityTest {
         Set<PersonEntity> set = new HashSet<>();
 
         set.add(testEntity);
-        personRepository.save(testEntity);
+        jpaPersonRepository.save(testEntity);
 
         Assert.isTrue(set.contains(testEntity), "Entity not found in the set");
     }

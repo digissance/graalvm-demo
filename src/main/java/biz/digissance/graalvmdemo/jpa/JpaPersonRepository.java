@@ -5,6 +5,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface PersonRepository extends JpaRepository<PersonEntity, PartyPK> {
+public interface JpaPersonRepository extends JpaRepository<PersonEntity, PartyPK> {
     Optional<PersonEntity> findByIdentifier(String identifier);
 }
