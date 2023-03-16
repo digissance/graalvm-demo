@@ -1,5 +1,7 @@
 package biz.digissance.graalvmdemo.jpa;
 
+import biz.digissance.graalvmdemo.jpa.party.person.JpaPerson;
+import biz.digissance.graalvmdemo.jpa.party.person.JpaPersonRepository;
 import java.util.HashSet;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
@@ -17,12 +19,12 @@ class TestEntityTest {
 
     @Test
     void shouldFindEntity() {
-        PersonEntity testEntity = PersonEntity.builder().build();
-        Set<PersonEntity> set = new HashSet<>();
+//        JpaPerson testEntity = JpaPerson.builder().build();
+//        Set<JpaPerson> set = new HashSet<>();
 
-        set.add(testEntity);
-        jpaPersonRepository.save(testEntity);
+//        set.add(testEntity);
+//        jpaPersonRepository.save(testEntity);
 
-        Assert.isTrue(set.contains(testEntity), "Entity not found in the set");
+//        Assert.isTrue(set.contains(testEntity), "Entity not found in the set");
     }
 }

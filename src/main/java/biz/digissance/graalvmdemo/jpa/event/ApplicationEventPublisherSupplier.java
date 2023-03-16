@@ -1,4 +1,4 @@
-package biz.digissance.graalvmdemo.jpa;
+package biz.digissance.graalvmdemo.jpa.event;
 
 import org.springframework.context.ApplicationEventPublisher;
 

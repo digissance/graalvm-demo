@@ -1,7 +1,7 @@
 package biz.digissance.graalvmdemo;
 
-import biz.digissance.graalvmdemo.jpa.BaseEntityImportBeanDefinitionRegistrar;
-import biz.digissance.graalvmdemo.jpa.ApplicationEventPublisherSupplier;
+import biz.digissance.graalvmdemo.jpa.base.BaseEntityImportBeanDefinitionRegistrar;
+import biz.digissance.graalvmdemo.jpa.event.ApplicationEventPublisherSupplier;
 import java.security.Principal;
 import java.util.Optional;
 import org.springframework.boot.SpringApplication;
@@ -10,7 +10,6 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ImportRuntimeHints;
 import org.springframework.data.domain.AuditorAware;
-import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 

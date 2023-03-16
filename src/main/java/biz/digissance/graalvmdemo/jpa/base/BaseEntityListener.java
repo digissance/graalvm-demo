@@ -1,5 +1,7 @@
-package biz.digissance.graalvmdemo.jpa;
+package biz.digissance.graalvmdemo.jpa.base;
 
+import biz.digissance.graalvmdemo.jpa.event.ApplicationEventPublisherSupplier;
+import biz.digissance.graalvmdemo.jpa.event.EntityCreated;
 import jakarta.persistence.PostLoad;
 import jakarta.persistence.PostPersist;
 import jakarta.persistence.PostRemove;
@@ -22,9 +24,9 @@ public class BaseEntityListener {
     @PreRemove
     private void beforeAnyUpdate(BaseEntity baseEntity) {
         if (Objects.isNull(baseEntity.getId())) {
-            log.info("[ENTITY AUDIT] About to add a entity" +this);
+            log.info("[ENTITY AUDIT] About to add a entity" +baseEntity);
         } else {
-            log.info("[ENTITY AUDIT] About to update/delete entity: " + baseEntity.getId());
+            log.info("[ENTITY AUDIT] About to update/delete entity: " + baseEntity);
         }
     }
 
