@@ -21,30 +21,38 @@ public class BaseEntityListener {
 
     @PrePersist
     @PreUpdate
-    @PreRemove
     private void beforeAnyUpdate(BaseEntity baseEntity) {
         if (Objects.isNull(baseEntity.getId())) {
-            log.info("[ENTITY AUDIT] About to add a entity" +baseEntity);
+            log.info("[ENTITY AUDIT] About to create entity: " + baseEntity);
         } else {
-            log.info("[ENTITY AUDIT] About to update/delete entity: " + baseEntity);
+            log.info("[ENTITY AUDIT] About to update entity: " + baseEntity);
         }
     }
 
-    //    @PostPersist
-    @PostUpdate
-    @PostRemove
-    private void afterAnyUpdate(BaseEntity baseEntity) {
-        log.info("[ENTITY AUDIT] add/update/delete complete for message: " + baseEntity.getId());
+    @PreRemove
+    private void beforeAnyDelete(BaseEntity baseEntity) {
+        log.info("[ENTITY AUDIT] About to delete entity: " + baseEntity);
     }
 
     @PostPersist
     private void afterPersist(BaseEntity baseEntity) {
-        log.info("[ENTITY AUDIT] About to publish event..." +this);
+        log.info("[ENTITY AUDIT] create complete for entity: " + baseEntity);
+        log.info("[ENTITY AUDIT] About to publish event..." + this);
         handler.getPublisher().publishEvent(new EntityCreated(baseEntity));
+    }
+
+    @PostUpdate
+    private void afterAnyUpdate(BaseEntity baseEntity) {
+        log.info("[ENTITY AUDIT] update complete for entity: " + baseEntity);
+    }
+
+    @PostRemove
+    private void afterAnyRemove(BaseEntity baseEntity) {
+        log.info("[ENTITY AUDIT] delete complete for entity: " + baseEntity);
     }
 
     @PostLoad
     private void afterLoad(BaseEntity baseEntity) {
-        log.info("[ENTITY AUDIT] entity loaded from database: " + baseEntity.getId());
+        log.info("[ENTITY AUDIT] entity loaded from database: " + baseEntity);
     }
 }

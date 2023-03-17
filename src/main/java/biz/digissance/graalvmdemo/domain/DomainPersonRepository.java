@@ -8,6 +8,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import net.liccioni.archetypes.address.AddressProperties;
 import net.liccioni.archetypes.party.Person;
+import net.liccioni.archetypes.uniqueid.UniqueIdentifier;
 
 public class DomainPersonRepository implements PersonRepository {
     private final JpaPersonRepository repository;
@@ -21,10 +22,14 @@ public class DomainPersonRepository implements PersonRepository {
 
     @Override
     public Person save(final Person person) {
-        final var jpaPerson = mapper.toPersonJpa(person);
-        jpaPerson.getAddressProperties().forEach(p -> p.setParty(jpaPerson));
-        final var save = repository.save(jpaPerson);
-        return mapper.toPersonDomain(save);
+
+        final var jpaPerson = Optional.ofNullable(person.getPartyIdentifier())
+                .map(UniqueIdentifier::getId)
+                .flatMap(repository::findByIdentifier)
+                .map(p -> mapper.toPersonJpa(person, p))
+                .orElseGet(() -> mapper.toPersonJpa(person));
+
+        return mapper.toPersonDomain(repository.save(jpaPerson));
     }
 
     @Override
@@ -39,16 +44,44 @@ public class DomainPersonRepository implements PersonRepository {
     }
 
     @Override
-    public void removeAddress(final String id, final Predicate<AddressProperties> addressMatcher) {
-        repository.findByIdentifier(id)
-                .ifPresentOrElse(
-                        jpaPerson -> {
-                            jpaPerson.getAddressProperties()
-                                    .removeIf(p -> addressMatcher.test(mapper.toAddressPropertyJpa(p)));
-                            repository.save(jpaPerson);
-                        },
-                        () -> {
-                            throw new IllegalArgumentException(String.format("Person with Id %s not found", id));
-                        });
+    public Person removeAddress(final String id, final Predicate<AddressProperties> addressMatcher) {
+
+        final var jpaPerson = repository.findByIdentifier(id)
+                .orElseThrow(() -> new IllegalArgumentException(String.format("Person with Id %s not found", id)));
+
+        jpaPerson.getAddressProperties()
+                .removeIf(p -> addressMatcher.test(mapper.toAddressProperty(p)));
+
+        return mapper.toPersonDomain(repository.save(jpaPerson));
+    }
+
+    @Override
+    public Person modifyAddress(final String id,
+                                final Predicate<AddressProperties> addressMatcher,
+                                final AddressProperties addressProperties) {
+
+        final var jpaPerson = repository.findByIdentifier(id)
+                .orElseThrow(() -> new IllegalArgumentException(String.format("Person with Id %s not found", id)));
+
+        jpaPerson.getAddressProperties()
+                .removeIf(p -> addressMatcher.test(mapper.toAddressProperty(p)));
+        final var jpaAddressProperty = mapper.toAddressPropertyJpa(addressProperties);
+        jpaAddressProperty.setParty(jpaPerson);
+        jpaPerson.getAddressProperties().add(jpaAddressProperty);
+
+        return mapper.toPersonDomain(repository.save(jpaPerson));
+    }
+
+    @Override
+    public Person addAddress(final String id, final AddressProperties addressProperties) {
+
+        final var jpaPerson = repository.findByIdentifier(id)
+                .orElseThrow(() -> new IllegalArgumentException(String.format("Person with Id %s not found", id)));
+
+        final var jpaAddressProperty = mapper.toAddressPropertyJpa(addressProperties);
+        jpaAddressProperty.setParty(jpaPerson);
+        jpaPerson.getAddressProperties().add(jpaAddressProperty);
+
+        return mapper.toPersonDomain(repository.save(jpaPerson));
     }
 }

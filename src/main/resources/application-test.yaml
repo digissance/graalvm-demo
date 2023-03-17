@@ -1,6 +1,7 @@
 logging:
   level:
     org:
+      hibernate.orm.jdbc.bind: TRACE
       springframework:
         security: TRACE
 spring:

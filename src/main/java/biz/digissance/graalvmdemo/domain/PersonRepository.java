@@ -11,7 +11,12 @@ public interface PersonRepository {
 
     List<Person> findAll();
 
-    Optional<Person> findByIdentifier(String identifier);
+    Optional<Person> findByIdentifier(final String identifier);
 
-    void removeAddress(final String id, final Predicate<AddressProperties> addressMatcher);
+    Person removeAddress(final String id, final Predicate<AddressProperties> addressMatcher);
+
+    Person modifyAddress(final String id, final Predicate<AddressProperties> addressMatcher,
+                         final AddressProperties addressProperties);
+
+    Person addAddress(final String id, final AddressProperties addressProperties);
 }

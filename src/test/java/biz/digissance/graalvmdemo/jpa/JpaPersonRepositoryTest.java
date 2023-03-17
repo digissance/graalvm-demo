@@ -6,10 +6,10 @@ import biz.digissance.graalvmdemo.domain.DomainPersonRepository;
 import biz.digissance.graalvmdemo.domain.PersonRepository;
 import biz.digissance.graalvmdemo.jpa.party.PartyMapper;
 import biz.digissance.graalvmdemo.jpa.party.address.AddressMapper;
+import biz.digissance.graalvmdemo.jpa.party.address.JpaAddressRepository;
 import biz.digissance.graalvmdemo.jpa.party.person.JpaPersonRepository;
 import jakarta.persistence.EntityManager;
 import java.util.Set;
-import java.util.function.Predicate;
 import javax.sql.DataSource;
 import net.liccioni.archetypes.address.AddressProperties;
 import net.liccioni.archetypes.address.EmailAddress;
@@ -42,6 +42,8 @@ class JpaPersonRepositoryTest {
     private EntityManager entityManager;
     @Autowired
     private JpaPersonRepository jpaPersonRepository;
+    @Autowired
+    private JpaAddressRepository jpaAddressRepository;
 
     @Autowired
     private PartyMapper partyMapper;
@@ -61,6 +63,7 @@ class JpaPersonRepositoryTest {
         assertThat(jdbcTemplate).isNotNull();
         assertThat(entityManager).isNotNull();
         assertThat(jpaPersonRepository).isNotNull();
+        assertThat(jpaAddressRepository).isNotNull();
         assertThat(addressMapper).isNotNull();
     }
 
@@ -99,23 +102,52 @@ class JpaPersonRepositoryTest {
     }
 
     @Test
-    @Transactional(propagation = Propagation.NOT_SUPPORTED)
-    void shouldSavePersonAndAddressThenRemoveAddress() {
+//    @Transactional(propagation = Propagation.NOT_SUPPORTED)
+    void shouldModifyAddress() {
 
         final var gus = Person.builder()
                 .personName(PersonName.builder().givenName("Gustavo")
                         .familyName("Rodriguez")
                         .build())
                 .addressProperties(Set.of(AddressProperties.builder()
-                        .address(EmailAddress.builder()
-                                .emailAddress("liccioni@gmail.com")
-                                .build())
-                        .build()))
+                                .use(Set.of("email"))
+                                .address(EmailAddress.builder()
+                                        .emailAddress("liccioni@gmail.com")
+                                        .build())
+                                .build(),
+                        AddressProperties.builder()
+                                .use(Set.of("home"))
+                                .address(GeographicAddress.builder()
+                                        .city("Barcelona")
+                                        .build())
+                                .build(),
+                        AddressProperties.builder()
+                                .use(Set.of("work"))
+                                .address(GeographicAddress.builder()
+                                        .city("Barcelona")
+                                        .zipOrPostCode("08018")
+                                        .build())
+                                .build()))
                 .build();
         final var created = personRepository.save(gus);
-        created.getAddressProperties().stream().findFirst().ifPresent(p -> created.getAddressProperties().remove(p));
-        final var modified = personRepository.save(created);
-        assertThat(modified).usingRecursiveComparison().ignoringFields("partyIdentifier").isEqualTo(gus);
+        entityManager.flush();
+        final var oldHomeAddress = created.getAddressProperties().stream()
+                .filter(p -> p.getUse().contains("home")).findFirst().orElseThrow();
+        final var newHomeAddress = oldHomeAddress.toBuilder()
+                .address(GeographicAddress.builder()
+                        .addressLine(Set.of("Marroc 11"))
+                        .regionOrState("Barcelona")
+                        .city("Barcelona")
+                        .zipOrPostCode("08018")
+                        .build())
+                .build();
+        personRepository.modifyAddress(created.getPartyIdentifier().getId(),
+                addressProperties -> addressProperties.getUse().contains("home"), newHomeAddress);
+        entityManager.flush();
+        final var actual = personRepository.findByIdentifier(created.getPartyIdentifier().getId()).orElseThrow();
+        created.getAddressProperties().removeIf(p -> p.getUse().contains("home"));
+        created.getAddressProperties().add(newHomeAddress);
+        assertThat(actual).usingRecursiveComparison().ignoringCollectionOrder().isEqualTo(created);
     }
 
     @Test
@@ -134,7 +166,7 @@ class JpaPersonRepositoryTest {
                 .build();
         final var created = personRepository.save(gus);
         final var actual = personRepository.findByIdentifier(created.getPartyIdentifier().getId()).orElseThrow();
-        assertThat(actual).isEqualTo(created);
+        assertThat(actual).usingRecursiveComparison().ignoringCollectionOrder().isEqualTo(created);
     }
 
     @Test
@@ -161,10 +193,71 @@ class JpaPersonRepositoryTest {
         assertThat(created).usingRecursiveComparison().ignoringFields("partyIdentifier").isEqualTo(gus);
         final var homeAddress = created.getAddressProperties().stream().filter(p -> p.getUse().contains("home"))
                 .findFirst().orElseThrow();
-        created.getAddressProperties().removeIf(p->p.equals(homeAddress));
+        created.getAddressProperties().removeIf(p -> p.equals(homeAddress));
         personRepository.removeAddress(created.getPartyIdentifier().getId(),
                 addressProperties -> addressProperties.getUse().contains("home"));
         final var actual = personRepository.findByIdentifier(created.getPartyIdentifier().getId()).orElseThrow();
-        assertThat(actual).isEqualTo(created);
+        assertThat(actual).usingRecursiveComparison().ignoringCollectionOrder().isEqualTo(created);
+    }
+
+    @Test
+    void shouldAddAddress() {
+
+        final var gus = Person.builder()
+                .personName(PersonName.builder().givenName("Gustavo")
+                        .familyName("Rodriguez")
+                        .build())
+                .addressProperties(Set.of(AddressProperties.builder()
+                                .use(Set.of("email"))
+                                .address(EmailAddress.builder()
+                                        .emailAddress("liccioni@gmail.com")
+                                        .build())
+                                .build(),
+                        AddressProperties.builder()
+                                .use(Set.of("work"))
+                                .address(GeographicAddress.builder()
+                                        .city("Barcelona")
+                                        .zipOrPostCode("08018")
+                                        .build())
+                                .build()))
+                .build();
+        final var created = personRepository.save(gus);
+        entityManager.flush();
+        final var newHomeAddress =
+                AddressProperties.builder()
+                        .use(Set.of("home"))
+                        .address(GeographicAddress.builder()
+                                .addressLine(Set.of("Marroc 11"))
+                                .regionOrState("Barcelona")
+                                .city("Barcelona")
+                                .zipOrPostCode("08018")
+                                .build())
+                        .build();
+        personRepository.addAddress(created.getPartyIdentifier().getId(), newHomeAddress);
+        entityManager.flush();
+        final var actual = personRepository.findByIdentifier(created.getPartyIdentifier().getId()).orElseThrow();
+        created.getAddressProperties().add(newHomeAddress);
+        assertThat(actual).usingRecursiveComparison().ignoringCollectionOrder().isEqualTo(created);
+    }
+
+    @Test
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
+    void shouldFindPersonByIdWithEntityGraph() {
+
+        final var gus = Person.builder()
+                .personName(PersonName.builder().givenName("Gustavo")
+                        .familyName("Rodriguez")
+                        .build())
+                .addressProperties(Set.of(AddressProperties.builder()
+                        .use(Set.of("email"))
+                        .address(EmailAddress.builder()
+                                .emailAddress("liccioni@gmail.com")
+                                .build())
+                        .build()))
+                .build();
+        final var created = personRepository.save(gus);
+        final var actual = personRepository.findByIdentifier(created.getPartyIdentifier().getId()).orElseThrow();
+        assertThat(actual).usingRecursiveComparison().ignoringCollectionOrder().isEqualTo(created);
+        jpaPersonRepository.deleteAll();
     }
 }

@@ -12,6 +12,7 @@ import net.liccioni.archetypes.party.Organization;
 import net.liccioni.archetypes.party.Party;
 import net.liccioni.archetypes.party.Person;
 import org.mapstruct.AfterMapping;
+import org.mapstruct.CollectionMappingStrategy;
 import org.mapstruct.Condition;
 import org.mapstruct.InheritConfiguration;
 import org.mapstruct.InheritInverseConfiguration;
@@ -24,20 +25,22 @@ import org.mapstruct.SubclassMapping;
 @Mapper(componentModel = "spring",
         uses = {DateTimeMapper.class,
                 AddressMapper.class},
-        subclassExhaustiveStrategy = SubclassExhaustiveStrategy.RUNTIME_EXCEPTION)
+        subclassExhaustiveStrategy = SubclassExhaustiveStrategy.RUNTIME_EXCEPTION,
+        collectionMappingStrategy = CollectionMappingStrategy.ADDER_PREFERRED
+)
 public interface PartyMapper extends LazyLoadingAwareMapper {
 
     @SubclassMapping(target = Person.class, source = JpaPerson.class)
     @SubclassMapping(target = Organization.class, source = JpaOrganization.class)
     Party toDomain(JpaParty party);
 
-    @Mapping(target = "personName.validFrom", source = "personName.validFrom", qualifiedByName = "map")
-    @Mapping(target = "personName.validTo", source = "personName.validTo", qualifiedByName = "map")
+    @Mapping(target = "personName.validFrom", source = "personName.validFrom")
+    @Mapping(target = "personName.validTo", source = "personName.validTo")
     @Mapping(target = "partyIdentifier.id", source = "identifier")
     Person toPersonDomain(JpaPerson person);
 
-    @Mapping(target = "organizationName.validFrom", source = "organizationName.validFrom", qualifiedByName = "map")
-    @Mapping(target = "organizationName.validTo", source = "organizationName.validTo", qualifiedByName = "map")
+    @Mapping(target = "organizationName.validFrom", source = "organizationName.validFrom")
+    @Mapping(target = "organizationName.validTo", source = "organizationName.validTo")
     @Mapping(target = "partyIdentifier.id", source = "identifier")
     Organization toOrganizationDomain(JpaOrganization organization);
 
@@ -58,15 +61,27 @@ public interface PartyMapper extends LazyLoadingAwareMapper {
     }
 
     @Condition
-    default boolean isNotLazyLoadedAddress(
-            Collection<JpaAddressProperty> sourceCollection) {
+    default boolean isNotLazyLoadedAddress(Collection<JpaAddressProperty> sourceCollection) {
         return isNotLazyLoaded(sourceCollection);
     }
 
 //    public abstract JpaAddressProperty toAddressPropertyJpa(AddressProperties addressProperties);
 
-    @InheritConfiguration(name = "toEntity")
-    JpaParty toEntity(Party party, @MappingTarget JpaParty target);
+//    @InheritConfiguration(name = "toEntity")
+//    JpaParty toEntity(Party party, @MappingTarget JpaParty target);
 
-    AddressProperties toAddressPropertyJpa(JpaAddressProperty addressProperty);
+    @InheritConfiguration(name = "toPersonJpa")
+    @Mapping(target = "addressProperties", ignore = true)
+//    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    JpaPerson toPersonJpa(Person person, @MappingTarget JpaPerson target);
+
+    @InheritConfiguration(name = "toOrganizationJpa")
+//    @Mapping(source = "partyIdentifier.id", target = "identifier")
+    JpaOrganization toOrganizationJpa(Organization organization, @MappingTarget JpaOrganization target);
+
+    AddressProperties toAddressProperty(JpaAddressProperty addressProperty);
+
+    void toAddressPropertyJpa(AddressProperties newAddress, @MappingTarget JpaAddressProperty ogAddress);
+
+    JpaAddressProperty toAddressPropertyJpa(AddressProperties newAddress);
 }

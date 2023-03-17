@@ -1,5 +1,6 @@
 package biz.digissance.graalvmdemo.jpa.party.address;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import lombok.Getter;
@@ -13,5 +14,6 @@ import lombok.ToString;
 @DiscriminatorValue("email")
 public class JpaEmailAddress extends JpaAddress {
 
+    @Column(unique = true)
     private String emailAddress;
 }
