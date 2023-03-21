@@ -1,5 +1,6 @@
-package biz.digissance.graalvmdemo.jpa;
+package biz.digissance.graalvmdemo.jpa.acl;
 
+import biz.digissance.graalvmdemo.jpa.event.EntityCreated;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;

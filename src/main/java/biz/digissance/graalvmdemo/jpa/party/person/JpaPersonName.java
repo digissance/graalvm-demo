@@ -1,4 +1,4 @@
-package biz.digissance.graalvmdemo.jpa;
+package biz.digissance.graalvmdemo.jpa.party.person;
 
 import jakarta.persistence.Embeddable;
 import java.time.Instant;

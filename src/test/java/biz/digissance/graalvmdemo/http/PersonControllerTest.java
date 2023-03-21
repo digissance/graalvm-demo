@@ -2,7 +2,7 @@ package biz.digissance.graalvmdemo.http;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import biz.digissance.graalvmdemo.jpa.JpaPersonRepository;
+import biz.digissance.graalvmdemo.jpa.party.person.JpaPersonRepository;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

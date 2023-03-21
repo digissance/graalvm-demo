@@ -1,4 +1,4 @@
-package biz.digissance.graalvmdemo.jpa;
+package biz.digissance.graalvmdemo.jpa.base;
 
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;

@@ -1,5 +1,6 @@
-package biz.digissance.graalvmdemo.jpa;
+package biz.digissance.graalvmdemo.jpa.party.organization;
 
+import biz.digissance.graalvmdemo.jpa.party.JpaParty;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
@@ -13,10 +14,8 @@ import lombok.experimental.SuperBuilder;
 @Getter
 @Setter
 @ToString
-@SuperBuilder
-@RequiredArgsConstructor
-@DiscriminatorValue("person")
-public class PersonEntity extends PartyEntity {
+@DiscriminatorValue("organization")
+public class JpaOrganization extends JpaParty {
     @Embedded
-    private JpaPersonName personName;
+    private JpaOrganizationName organizationName;
 }
