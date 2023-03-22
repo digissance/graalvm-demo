@@ -1,37 +1,53 @@
 package biz.digissance.graalvmdemo.security;
 
+import biz.digissance.graalvmdemo.jpa.party.AuthenticationMapper;
+import biz.digissance.graalvmdemo.jpa.party.authentication.JpaPartyAuthenticationRepository;
 import java.io.Serializable;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.access.PermissionEvaluator;
 import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;
 import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.security.crypto.factory.PasswordEncoderFactories;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.context.NullSecurityContextRepository;
 
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
 
+
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
+
         return (web) -> web.debug(true);
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public PasswordEncoder passwordEncoder() {
+        return PasswordEncoderFactories.createDelegatingPasswordEncoder();
+    }
+
+    @Bean
+    public AuthenticationProvider authenticationProvider(UserDetailsService userDetailsService) {
+        final var daoAuthenticationProvider = new DaoAuthenticationProvider();
+        daoAuthenticationProvider.setPasswordEncoder(passwordEncoder());
+        daoAuthenticationProvider.setUserDetailsService(userDetailsService);
+        return daoAuthenticationProvider;
+    }
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http,
+                                                   final AuthenticationProvider daoAuthProvider) throws Exception {
 //        http
 //                .authorizeHttpRequests((requests) -> requests
 //                        .requestMatchers("/", "/home").permitAll()
@@ -43,37 +59,54 @@ public class SecurityConfig {
 //                )
 //                .logout((logout) -> logout.permitAll());
 
-        return http
-                .csrf(AbstractHttpConfigurer::disable)
-                .anonymous().disable()
+//        return http
+//                .csrf(AbstractHttpConfigurer::disable)
+//                .anonymous().disable()
 //                .httpBasic()
 //                .and()
-                .sessionManagement().disable()
-                .securityContext().disable()//.securityContextRepository(new NullSecurityContextRepository()).and()
-                .requestCache().disable()
-                .logout().disable()
-                .exceptionHandling().disable()
-                .headers().disable()
+//                .sessionManagement().disable()
+//                .securityContext().disable()//.securityContextRepository(new NullSecurityContextRepository()).and()
+//                .requestCache().disable()
+//                .logout().disable()
+//                .exceptionHandling().disable()
+//                .headers().disable()
 //                .sessionManagement(p -> p.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 //                .authorizeHttpRequests().anyRequest().permitAll().and()
+//                .build();
+        return http
+                .authenticationProvider(daoAuthProvider)
+                .authorizeHttpRequests(p -> {
+                    p.requestMatchers("/", "/**", "/h2-console/**").permitAll();
+                })
+                .csrf().disable()
+                .headers().frameOptions().disable()
+                .and()
+                .formLogin(
+                        form -> form
+                                .loginPage("/login")
+                                .loginProcessingUrl("/login")
+                                .defaultSuccessUrl("/users")
+//                                .permitAll()
+                )
                 .build();
     }
 
-
     @Bean
-    public UserDetailsService userDetailsService() {
-        UserDetails user =
-                User.withDefaultPasswordEncoder()
-                        .username("user")
-                        .password("password")
-                        .roles("USER")
-                        .build();
-
-        return new InMemoryUserDetailsManager(user);
+    public PartyAuthenticationRepository partyAuthenticationRepository(
+            final JpaPartyAuthenticationRepository repository,
+            final AuthenticationMapper mapper) {
+        return new DomainPartyAuthenticationRepository(repository, mapper);
     }
 
     @Bean
-    public MethodSecurityExpressionHandler methodSecurityExpressionHandler(){
+    public UserDetailsService userDetailsService(
+            final PartyAuthenticationRepository repository,
+            final JpaPartyAuthenticationRepository jpaRepository) {
+        return new EmailPasswordUserDetailsService(repository, jpaRepository);
+    }
+
+    @Bean
+    public MethodSecurityExpressionHandler methodSecurityExpressionHandler() {
         final var defaultMethodSecurityExpressionHandler = new DefaultMethodSecurityExpressionHandler();
         defaultMethodSecurityExpressionHandler.setPermissionEvaluator(new PermissionEvaluator() {
             @Override

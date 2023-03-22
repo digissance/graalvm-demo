@@ -14,4 +14,10 @@ public class AppConfig {
             final PartyMapper partyMapper) {
         return new DomainPersonRepository(jpaPersonRepository, partyMapper);
     }
+
+    @Bean
+    public PartyService partyService(final PersonRepository personRepository,
+                                     final PartyMapper partyMapper){
+        return new PartyServiceImpl(personRepository,partyMapper);
+    }
 }

@@ -2,6 +2,7 @@ package biz.digissance.graalvmdemo.http;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -18,11 +19,13 @@ import lombok.extern.jackson.Jacksonized;
 @NoArgsConstructor
 public class PersonDTO{
 
-    @NotBlank
-    private String name;
-    @NotBlank
-    private String lastname;
+    @NotEmpty
+    private String firstName;
+    @NotEmpty
+    private String lastName;
+    @NotEmpty(message = "Email should not be empty")
     @Email
-    @NotBlank
     private String email;
+    @NotEmpty(message = "Password should not be empty")
+    private String password;
 }
