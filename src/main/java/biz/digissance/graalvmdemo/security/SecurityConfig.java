@@ -6,6 +6,7 @@ import biz.digissance.graalvmdemo.jpa.party.JpaPartyRepository;
 import biz.digissance.graalvmdemo.jpa.party.PartyMapper;
 import biz.digissance.graalvmdemo.jpa.party.authentication.JpaPartyAuthenticationRepository;
 import java.io.Serializable;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.access.PermissionEvaluator;
@@ -30,11 +31,15 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableMethodSecurity
 public class SecurityConfig {
 
+    @Value("${SECURITY_DEBUG_ENABLED:false}")
+    private boolean securityDebugEnable;
+
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
 
-        return (web) -> web.ignoring().requestMatchers("/css/**", "/images/**", "/js/**", "/webfonts/**")
-                .and().debug(true);
+        return (web) -> web.ignoring()
+                .requestMatchers("/actuator/**", "/css/**", "/images/**", "/js/**", "/webfonts/**")
+                .and().debug(securityDebugEnable);
     }
 
     @Bean
