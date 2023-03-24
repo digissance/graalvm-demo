@@ -1,6 +1,6 @@
 package biz.digissance.graalvmdemo.jpa.party;
 
-import biz.digissance.graalvmdemo.domain.EmailPasswordAuthentication;
+import biz.digissance.graalvmdemo.domain.party.authentication.EmailPasswordAuthentication;
 import biz.digissance.graalvmdemo.http.PersonDTO;
 import biz.digissance.graalvmdemo.jpa.DateTimeMapper;
 import biz.digissance.graalvmdemo.jpa.base.LazyLoadingAwareMapper;

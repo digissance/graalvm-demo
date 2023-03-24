@@ -1,7 +1,6 @@
 package biz.digissance.graalvmdemo.security;
 
-import biz.digissance.graalvmdemo.domain.PartyRepository;
-import biz.digissance.graalvmdemo.jpa.party.JpaPartyRepository;
+import biz.digissance.graalvmdemo.domain.party.authentication.EmailPasswordPartyAuthenticationRepository;
 import biz.digissance.graalvmdemo.jpa.party.authentication.JpaPartyAuthenticationRepository;
 import net.liccioni.archetypes.relationship.PartyRole;
 import org.springframework.security.core.userdetails.User;
@@ -11,23 +10,18 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 public class EmailPasswordUserDetailsService implements UserDetailsService {
 
-    private final PartyRepository repository;
-    private final JpaPartyRepository jpaRepository;
     private final JpaPartyAuthenticationRepository authRepository;
+    private final EmailPasswordPartyAuthenticationRepository repository;
 
-    public EmailPasswordUserDetailsService(
-            final PartyRepository repository,
-            final JpaPartyRepository jpaRepository,
-            final JpaPartyAuthenticationRepository authRepository) {
-        this.repository = repository;
-        this.jpaRepository = jpaRepository;
+    public EmailPasswordUserDetailsService(final JpaPartyAuthenticationRepository authRepository,
+                                           final EmailPasswordPartyAuthenticationRepository repository) {
         this.authRepository = authRepository;
+        this.repository = repository;
     }
 
     @Override
     public UserDetails loadUserByUsername(final String username) throws UsernameNotFoundException {
-        final var entry = authRepository.findByEmailAddress2(username)
-//                .map(JpaEmailPasswordPartyAuthentication.class::cast)
+        final var entry = repository.findByEmailAddress(username)
                 .orElseThrow(() -> new UsernameNotFoundException(username));
         return User.withUsername(username)
                 .password(entry.getPassword())

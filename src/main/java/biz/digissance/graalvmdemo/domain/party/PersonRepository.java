@@ -1,4 +1,4 @@
-package biz.digissance.graalvmdemo.domain;
+package biz.digissance.graalvmdemo.domain.party;
 
 import java.util.List;
 import java.util.Optional;

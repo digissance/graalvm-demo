@@ -1,4 +1,4 @@
-package biz.digissance.graalvmdemo.domain;
+package biz.digissance.graalvmdemo.domain.party;
 
 import biz.digissance.graalvmdemo.http.PersonDTO;
 import net.liccioni.archetypes.party.Party;
