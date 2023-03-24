@@ -27,10 +27,10 @@ public class PersonController {
 //    @PreAuthorize("hasPermission(#person,'WRITE')")
     public Person createTestEntities(@Valid @RequestBody PersonDTO person) {
         log.info("Request received: " + person);
-        var p = repository.save(Person.builder()
+        var p = repository.create(Person.builder()
                 .personName(PersonName.builder()
-                        .givenName(person.getName())
-                        .familyName(person.getLastname())
+                        .givenName(person.getFirstName())
+                        .familyName(person.getLastName())
                         .build())
                 .build());
         log.info(p.toString());

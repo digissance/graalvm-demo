@@ -22,15 +22,9 @@ public class JpaAddressProperty extends BaseEntity {
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     private JpaParty party;
 
-    //    @ManyToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST})
     @ManyToOne(optional = false, cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private JpaAddress address;
 
-//    @OneToMany(mappedBy = "addressProperty")
-//    private Set<JpaAddressUse> use;
-
     @ElementCollection
-//    @CollectionTable(name = "address_property_use", joinColumns = @JoinColumn(name = "address_property_id"))
-//    @Column(name = "phone_number")
     private Set<String> use = new HashSet<>();
 }

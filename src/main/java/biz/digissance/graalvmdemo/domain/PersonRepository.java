@@ -7,16 +7,14 @@ import net.liccioni.archetypes.address.AddressProperties;
 import net.liccioni.archetypes.party.Person;
 
 public interface PersonRepository {
-    Person save(Person gus);
+
+    Person create(final Person person);
+
+    Person update(Person person);
 
     List<Person> findAll();
 
     Optional<Person> findByIdentifier(final String identifier);
 
     Person removeAddress(final String id, final Predicate<AddressProperties> addressMatcher);
-
-    Person modifyAddress(final String id, final Predicate<AddressProperties> addressMatcher,
-                         final AddressProperties addressProperties);
-
-    Person addAddress(final String id, final AddressProperties addressProperties);
 }
