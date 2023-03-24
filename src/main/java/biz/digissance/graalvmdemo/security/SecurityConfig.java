@@ -1,7 +1,9 @@
 package biz.digissance.graalvmdemo.security;
 
-import biz.digissance.graalvmdemo.domain.DomainPartyRepository;
-import biz.digissance.graalvmdemo.domain.PartyRepository;
+import biz.digissance.graalvmdemo.domain.party.DomainPartyRepository;
+import biz.digissance.graalvmdemo.domain.party.PartyRepository;
+import biz.digissance.graalvmdemo.domain.party.authentication.DomainEmailPasswordPartyAuthenticationRepository;
+import biz.digissance.graalvmdemo.domain.party.authentication.EmailPasswordPartyAuthenticationRepository;
 import biz.digissance.graalvmdemo.jpa.party.JpaPartyRepository;
 import biz.digissance.graalvmdemo.jpa.party.PartyMapper;
 import biz.digissance.graalvmdemo.jpa.party.authentication.JpaPartyAuthenticationRepository;
@@ -111,11 +113,16 @@ public class SecurityConfig {
     }
 
     @Bean
-    public UserDetailsService userDetailsService(
-            final PartyRepository repository,
-            final JpaPartyRepository jpaRepository,
-            final JpaPartyAuthenticationRepository authRepository) {
-        return new EmailPasswordUserDetailsService(repository, jpaRepository, authRepository);
+    public EmailPasswordPartyAuthenticationRepository emailPasswordPartyAuthenticationRepository(
+            final JpaPartyAuthenticationRepository repository,
+            final PartyMapper mapper) {
+        return new DomainEmailPasswordPartyAuthenticationRepository(repository, mapper);
+    }
+
+    @Bean
+    public UserDetailsService userDetailsService(final JpaPartyAuthenticationRepository authRepository,
+                                                 final EmailPasswordPartyAuthenticationRepository repository) {
+        return new EmailPasswordUserDetailsService(authRepository, repository);
     }
 
     @Bean

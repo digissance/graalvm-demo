@@ -1,7 +1,6 @@
-package biz.digissance.graalvmdemo.domain;
+package biz.digissance.graalvmdemo.domain.party;
 
 import java.util.Optional;
-import net.liccioni.archetypes.party.Party;
 import net.liccioni.archetypes.party.PartyAuthentication;
 
 public interface PartyRepository {

@@ -1,4 +1,4 @@
-package biz.digissance.graalvmdemo.domain;
+package biz.digissance.graalvmdemo.domain.party.authentication;
 
 import lombok.EqualsAndHashCode;
 import lombok.Value;

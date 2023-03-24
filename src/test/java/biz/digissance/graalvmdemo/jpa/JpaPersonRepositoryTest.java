@@ -2,9 +2,9 @@ package biz.digissance.graalvmdemo.jpa;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import biz.digissance.graalvmdemo.domain.DomainPersonRepository;
-import biz.digissance.graalvmdemo.domain.EmailPasswordAuthentication;
-import biz.digissance.graalvmdemo.domain.PersonRepository;
+import biz.digissance.graalvmdemo.domain.party.DomainPersonRepository;
+import biz.digissance.graalvmdemo.domain.party.authentication.EmailPasswordAuthentication;
+import biz.digissance.graalvmdemo.domain.party.PersonRepository;
 import biz.digissance.graalvmdemo.jpa.party.AddressMapper;
 import biz.digissance.graalvmdemo.jpa.party.PartyMapper;
 import biz.digissance.graalvmdemo.jpa.party.address.JpaAddressRepository;

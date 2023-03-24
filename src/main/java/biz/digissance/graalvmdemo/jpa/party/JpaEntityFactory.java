@@ -1,6 +1,6 @@
 package biz.digissance.graalvmdemo.jpa.party;
 
-import biz.digissance.graalvmdemo.domain.EmailPasswordAuthentication;
+import biz.digissance.graalvmdemo.domain.party.authentication.EmailPasswordAuthentication;
 import biz.digissance.graalvmdemo.jpa.party.address.JpaAddressProperty;
 import biz.digissance.graalvmdemo.jpa.party.address.JpaAddressPropertyRepository;
 import biz.digissance.graalvmdemo.jpa.party.address.JpaAddressRepository;

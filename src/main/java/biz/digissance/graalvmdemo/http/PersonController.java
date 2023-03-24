@@ -1,6 +1,6 @@
 package biz.digissance.graalvmdemo.http;
 
-import biz.digissance.graalvmdemo.domain.PersonRepository;
+import biz.digissance.graalvmdemo.domain.party.PersonRepository;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;

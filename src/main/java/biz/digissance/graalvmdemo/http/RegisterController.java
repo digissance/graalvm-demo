@@ -1,6 +1,6 @@
 package biz.digissance.graalvmdemo.http;
 
-import biz.digissance.graalvmdemo.domain.PartyService;
+import biz.digissance.graalvmdemo.domain.party.PartyService;
 import jakarta.validation.Valid;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
