@@ -16,5 +16,6 @@ public class JpaEmailPasswordPartyAuthentication extends JpaPartyAuthentication 
     private String emailAddress;
 
     @Column(nullable = false)
+    @ToString.Exclude
     private String password;
 }

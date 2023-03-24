@@ -1,6 +1,7 @@
 package biz.digissance.graalvmdemo.domain.party.authentication;
 
 import lombok.EqualsAndHashCode;
+import lombok.ToString;
 import lombok.Value;
 import lombok.experimental.SuperBuilder;
 import net.liccioni.archetypes.party.Party;
@@ -12,6 +13,6 @@ import net.liccioni.archetypes.party.PartyAuthentication;
 public class EmailPasswordAuthentication extends PartyAuthentication {
 
     String emailAddress;
+    @ToString.Exclude
     String password;
-//    Party party;
 }
