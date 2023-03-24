@@ -1,8 +1,9 @@
-package biz.digissance.graalvmdemo.security;
+package biz.digissance.graalvmdemo.domain;
 
 import java.util.Optional;
+import net.liccioni.archetypes.party.Party;
 import net.liccioni.archetypes.party.PartyAuthentication;
 
-public interface PartyAuthenticationRepository {
+public interface PartyRepository {
     Optional<PartyAuthentication> findByEmailAddress(String emailAddress);
 }

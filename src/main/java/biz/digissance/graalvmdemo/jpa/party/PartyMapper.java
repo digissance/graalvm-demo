@@ -5,6 +5,7 @@ import biz.digissance.graalvmdemo.http.PersonDTO;
 import biz.digissance.graalvmdemo.jpa.DateTimeMapper;
 import biz.digissance.graalvmdemo.jpa.base.LazyLoadingAwareMapper;
 import biz.digissance.graalvmdemo.jpa.party.address.JpaAddressProperty;
+import biz.digissance.graalvmdemo.jpa.party.authentication.JpaEmailPasswordPartyAuthentication;
 import biz.digissance.graalvmdemo.jpa.party.authentication.JpaPartyAuthentication;
 import biz.digissance.graalvmdemo.jpa.party.organization.JpaOrganization;
 import biz.digissance.graalvmdemo.jpa.party.person.JpaPerson;
@@ -16,6 +17,7 @@ import net.liccioni.archetypes.address.AddressProperties;
 import net.liccioni.archetypes.address.EmailAddress;
 import net.liccioni.archetypes.party.Organization;
 import net.liccioni.archetypes.party.Party;
+import net.liccioni.archetypes.party.PartyAuthentication;
 import net.liccioni.archetypes.party.Person;
 import net.liccioni.archetypes.party.PersonName;
 import net.liccioni.archetypes.relationship.PartyRole;
@@ -37,42 +39,51 @@ import org.mapstruct.SubclassMapping;
 @Mapper(componentModel = "spring",
         uses = {DateTimeMapper.class,
                 AddressMapper.class,
-                AuthenticationMapper.class,
                 JpaEntityFactory.class},
+//        injectionStrategy = InjectionStrategy.CONSTRUCTOR,
         subclassExhaustiveStrategy = SubclassExhaustiveStrategy.RUNTIME_EXCEPTION,
         collectionMappingStrategy = CollectionMappingStrategy.ADDER_PREFERRED,
         nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE
 )
-public interface PartyMapper extends LazyLoadingAwareMapper {
+public abstract class PartyMapper implements LazyLoadingAwareMapper {
+
+//    @Autowired
+//    private PasswordEncoder passwordEncoder;
 
     @SubclassMapping(target = Person.class, source = JpaPerson.class)
     @SubclassMapping(target = Organization.class, source = JpaOrganization.class)
-    Party toDomain(JpaParty jpaParty);
+    public abstract Party toDomain(JpaParty jpaParty);
 
     @Mapping(target = "personName.validFrom", source = "personName.validFrom")
     @Mapping(target = "personName.validTo", source = "personName.validTo")
     @Mapping(target = "partyIdentifier.id", source = "identifier")
-    Person toPersonDomain(JpaPerson jpaPerson);
+    public abstract Person toPersonDomain(JpaPerson jpaPerson);
 
     @Mapping(target = "organizationName.validFrom", source = "organizationName.validFrom")
     @Mapping(target = "organizationName.validTo", source = "organizationName.validTo")
     @Mapping(target = "partyIdentifier.id", source = "identifier")
-    Organization toOrganizationDomain(JpaOrganization jpaOrganization);
+    public abstract Organization toOrganizationDomain(JpaOrganization jpaOrganization);
 
     @InheritInverseConfiguration(name = "toDomain")
-    JpaParty toEntity(Party party);
+    public abstract JpaParty toEntity(Party party);
 
     @InheritInverseConfiguration(name = "toPersonDomain")
-//    @Mapping(target = "addressProperties", ignore = true)
-//    @Mapping(target = "authentications", ignore = true)
-//    @Mapping(target = "roles", ignore = true)
-    JpaPerson toPersonJpa(Person person);
+    public abstract JpaPerson toPersonJpa(Person person);
 
     @InheritInverseConfiguration(name = "toOrganizationDomain")
-    JpaOrganization toOrganizationJpa(Organization organization);
+    public abstract JpaOrganization toOrganizationJpa(Organization organization);
+
+    @SubclassMapping(target = EmailPasswordAuthentication.class, source = JpaEmailPasswordPartyAuthentication.class)
+    public abstract PartyAuthentication toAuthDomain(JpaPartyAuthentication authentication);
+
+//    @SubclassMapping(target = EmailPasswordAuthentication.class, source = JpaEmailPasswordPartyAuthentication.class)
+//    public abstract EmailPasswordAuthentication toAuthDomain(JpaEmailPasswordPartyAuthentication authentication);
+
+    @InheritInverseConfiguration(name = "toAuthDomain")
+    public abstract JpaPartyAuthentication toAuthEntity(PartyAuthentication authentication);
 
     @AfterMapping
-    default void setParty(Party party, @MappingTarget JpaParty target) {
+    public void setParty(Party party, @MappingTarget JpaParty target) {
         Optional.ofNullable(target.getAddressProperties())
                 .ifPresent(address -> address.forEach(p -> p.setParty(target)));
         Optional.ofNullable(target.getAuthentications())
@@ -82,53 +93,46 @@ public interface PartyMapper extends LazyLoadingAwareMapper {
     }
 
     @Condition
-    default boolean isNotLazyLoadedAddress(Collection<JpaAddressProperty> sourceCollection) {
+    public boolean isNotLazyLoadedAddress(Collection<JpaAddressProperty> sourceCollection) {
         return isNotLazyLoaded(sourceCollection);
     }
 
     @Condition
-    default boolean isNotLazyLoadedRoles(Collection<JpaPartyRole> sourceCollection) {
+    public boolean isNotLazyLoadedRoles(Collection<JpaPartyRole> sourceCollection) {
         return isNotLazyLoaded(sourceCollection);
     }
 
     @Condition
-    default boolean isNotLazyLoadedAuthentications(Collection<JpaPartyAuthentication> sourceCollection) {
+    public boolean isNotLazyLoadedAuthentications(Collection<JpaPartyAuthentication> sourceCollection) {
         return isNotLazyLoaded(sourceCollection);
     }
 
     @InheritConfiguration(name = "toPersonJpa")
-//    @Mapping(target = "addressProperties", ignore = true)
-//    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-    void toPersonJpa(Person person, @MappingTarget JpaPerson target);
+    public abstract void toPersonJpa(Person person, @MappingTarget JpaPerson target);
 
-    @InheritConfiguration(name = "toOrganizationJpa")
-    JpaOrganization toOrganizationJpa(Organization organization, @MappingTarget JpaOrganization target);
-
-    AddressProperties toAddressProperty(JpaAddressProperty jpaAddressProperty);
-
-    JpaAddressProperty toAddressPropertyJpa(AddressProperties newAddress, @Context JpaParty jpaParty);
+    public abstract AddressProperties toAddressProperty(JpaAddressProperty jpaAddressProperty);
 
     @BeforeMapping
-    default void setParty(@Context JpaParty jpaParty, @MappingTarget JpaAddressProperty target) {
+    public void setParty(@Context JpaParty jpaParty, @MappingTarget JpaAddressProperty target) {
         target.setParty(jpaParty);
         jpaParty.getAddressProperties().add(target);
     }
 
     @Mapping(target = "identifier.id", source = "identifier")
     @Mapping(target = "party", ignore = true)
-    PartyRole toPartyRoleDomain(JpaPartyRole role);
+    public abstract PartyRole toPartyRoleDomain(JpaPartyRole role);
 
     @InheritInverseConfiguration(name = "toPartyRoleDomain")
     @Mapping(target = "party", ignore = true)
-    JpaPartyRole toPartyRoleEntity(PartyRole role);
+    public abstract JpaPartyRole toPartyRoleEntity(PartyRole role);
 
     @BeforeMapping
-    default void setParty(JpaPartyRole jpaPartyRole, @MappingTarget PartyRole.PartyRoleBuilder target) {
+    public void setParty(JpaPartyRole jpaPartyRole, @MappingTarget PartyRole.PartyRoleBuilder target) {
 //        target.party(party);
         System.out.println(jpaPartyRole);
     }
 
-    default Person toPersonDomain(PersonDTO personDto) {
+    public Person toPersonDomain(PersonDTO personDto, final String password) {
         final EmailAddress emailAddress = EmailAddress.builder()
                 .emailAddress(personDto.getEmail())
                 .build();
@@ -143,7 +147,7 @@ public interface PartyMapper extends LazyLoadingAwareMapper {
                         .build()))
                 .authentications(Set.of(EmailPasswordAuthentication.builder()
                         .emailAddress(emailAddress.getEmailAddress())
-                        .password(personDto.getPassword())
+                        .password(password)
                         .build()))
                 .roles(Set.of(PartyRole.builder()
                         .type(PartyRoleType.builder()

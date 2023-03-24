@@ -34,19 +34,22 @@ public class JpaEntityFactory {
     private final JpaAddressPropertyRepository addressPropertyRepository;
     private final JpaPartyRoleRepository roleRepository;
     private final JpaPartyAuthenticationRepository authRepository;
+    private final JpaPartyRepository partyRepository;
 
     public JpaEntityFactory(final JpaPartyRoleTypeRepository roleTypeRepository,
                             final JpaPersonRepository personRepository,
                             final JpaAddressRepository addressRepository,
                             final JpaAddressPropertyRepository addressPropertyRepository,
                             final JpaPartyRoleRepository roleRepository,
-                            final JpaPartyAuthenticationRepository authRepository) {
+                            final JpaPartyAuthenticationRepository authRepository,
+                            final JpaPartyRepository partyRepository) {
         this.roleTypeRepository = roleTypeRepository;
         this.personRepository = personRepository;
         this.addressRepository = addressRepository;
         this.addressPropertyRepository = addressPropertyRepository;
         this.roleRepository = roleRepository;
         this.authRepository = authRepository;
+        this.partyRepository = partyRepository;
     }
 
     @ObjectFactory

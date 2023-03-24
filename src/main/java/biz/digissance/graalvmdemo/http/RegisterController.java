@@ -40,7 +40,7 @@ public class RegisterController {
 
 //        if(result.hasErrors()){
 //            model.addAttribute("user", userDto);
-        return "/register";
+        return "redirect:/register?success";
 //        }
 
 //        userService.saveUser(userDto);

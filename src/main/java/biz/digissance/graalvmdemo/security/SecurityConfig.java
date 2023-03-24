@@ -1,6 +1,9 @@
 package biz.digissance.graalvmdemo.security;
 
-import biz.digissance.graalvmdemo.jpa.party.AuthenticationMapper;
+import biz.digissance.graalvmdemo.domain.DomainPartyRepository;
+import biz.digissance.graalvmdemo.domain.PartyRepository;
+import biz.digissance.graalvmdemo.jpa.party.JpaPartyRepository;
+import biz.digissance.graalvmdemo.jpa.party.PartyMapper;
 import biz.digissance.graalvmdemo.jpa.party.authentication.JpaPartyAuthenticationRepository;
 import java.io.Serializable;
 import org.springframework.context.annotation.Bean;
@@ -14,6 +17,8 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
@@ -25,11 +30,11 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableMethodSecurity
 public class SecurityConfig {
 
-
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
 
-        return (web) -> web.debug(true);
+        return (web) -> web.ignoring().requestMatchers("/css/**", "/images/**", "/js/**", "/webfonts/**")
+                .and().debug(true);
     }
 
     @Bean
@@ -46,8 +51,9 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http,
-                                                   final AuthenticationProvider daoAuthProvider) throws Exception {
+    public SecurityFilterChain securityFilterChain(final HttpSecurity http,
+                                                   final AuthenticationProvider daoAuthProvider,
+                                                   final UserDetailsService userDetailsService) throws Exception {
 //        http
 //                .authorizeHttpRequests((requests) -> requests
 //                        .requestMatchers("/", "/home").permitAll()
@@ -76,33 +82,40 @@ public class SecurityConfig {
         return http
                 .authenticationProvider(daoAuthProvider)
                 .authorizeHttpRequests(p -> {
-                    p.requestMatchers("/", "/**", "/h2-console/**").permitAll();
+                    p.requestMatchers("/", "/login", "/register/**").permitAll();
+                    p.anyRequest().authenticated();
                 })
                 .csrf().disable()
-                .headers().frameOptions().disable()
-                .and()
+                .rememberMe(rem -> {
+                    rem.alwaysRemember(true);
+                    rem.userDetailsService(userDetailsService);
+                })
+//                .headers().frameOptions().disable().and()
                 .formLogin(
                         form -> form
                                 .loginPage("/login")
                                 .loginProcessingUrl("/login")
-                                .defaultSuccessUrl("/users")
+                                .defaultSuccessUrl("/")
 //                                .permitAll()
-                )
+                ).sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .anonymous(AbstractHttpConfigurer::disable)
                 .build();
     }
 
     @Bean
-    public PartyAuthenticationRepository partyAuthenticationRepository(
-            final JpaPartyAuthenticationRepository repository,
-            final AuthenticationMapper mapper) {
-        return new DomainPartyAuthenticationRepository(repository, mapper);
+    public PartyRepository partyAuthenticationRepository(
+            final JpaPartyRepository repository,
+            final PartyMapper mapper,
+            final JpaPartyAuthenticationRepository authRepository) {
+        return new DomainPartyRepository(repository, authRepository, mapper);
     }
 
     @Bean
     public UserDetailsService userDetailsService(
-            final PartyAuthenticationRepository repository,
-            final JpaPartyAuthenticationRepository jpaRepository) {
-        return new EmailPasswordUserDetailsService(repository, jpaRepository);
+            final PartyRepository repository,
+            final JpaPartyRepository jpaRepository,
+            final JpaPartyAuthenticationRepository authRepository) {
+        return new EmailPasswordUserDetailsService(repository, jpaRepository, authRepository);
     }
 
     @Bean
