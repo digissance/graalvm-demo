@@ -66,7 +66,25 @@ public class JpaEntityFactory {
                 .orElseGet(JpaAddressProperty::new);
     }
 
+//    @ObjectFactory
+//    @Named("createAddressWithContext")
+//    JpaAddress create(Address partyAddress, @Context JpaParty target) {
+//        return addressRepository.findByAddress(partyAddress.getAddress()).orElseThrow();
+//    }
+
     @ObjectFactory
+    JpaEmailAddress create(EmailAddress emailAddress) {
+        return (JpaEmailAddress) addressRepository.findByAddress(emailAddress.getAddress())
+                .orElseGet(JpaEmailAddress::new);
+    }
+
+    @ObjectFactory
+    JpaGeographicAddress create(GeographicAddress geographicAddress) {
+        return (JpaGeographicAddress) addressRepository.findByAddress(geographicAddress.getAddress())
+                .orElseGet(JpaGeographicAddress::new);
+    }
+
+    /*@ObjectFactory
     JpaEmailAddress create(EmailAddress emailAddress, @Context JpaParty target) {
         final var address = Optional.ofNullable(emailAddress).map(Address::getAddress).orElse("");
         return Optional.ofNullable(target)
@@ -90,10 +108,10 @@ public class JpaEntityFactory {
                         .filter(q -> address.equals(q.getAddress()))
                         .findFirst())
                 .orElseGet(JpaGeographicAddress::new);
-    }
+    }*/
 
     @ObjectFactory
-    JpaPartyRoleType create(PartyRoleType partyRoleType, @Context JpaParty context) {
+    JpaPartyRoleType create(PartyRoleType partyRoleType) {
         return roleTypeRepository.findByName(partyRoleType.getName()).orElseGet(JpaPartyRoleType::new);
     }
 

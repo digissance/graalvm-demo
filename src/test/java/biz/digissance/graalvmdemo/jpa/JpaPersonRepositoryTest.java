@@ -6,6 +6,7 @@ import biz.digissance.graalvmdemo.domain.party.DomainPersonRepository;
 import biz.digissance.graalvmdemo.domain.party.authentication.EmailPasswordAuthentication;
 import biz.digissance.graalvmdemo.domain.party.PersonRepository;
 import biz.digissance.graalvmdemo.jpa.party.AddressMapper;
+import biz.digissance.graalvmdemo.jpa.party.JpaPartyRepository;
 import biz.digissance.graalvmdemo.jpa.party.PartyMapper;
 import biz.digissance.graalvmdemo.jpa.party.address.JpaAddressRepository;
 import biz.digissance.graalvmdemo.jpa.party.person.JpaPersonRepository;
@@ -46,6 +47,8 @@ class JpaPersonRepositoryTest {
     private EntityManager entityManager;
     @Autowired
     private JpaPersonRepository jpaPersonRepository;
+    @Autowired
+    private JpaPartyRepository jpaPartyRepository;
     @Autowired
     private JpaAddressRepository jpaAddressRepository;
 
@@ -98,7 +101,7 @@ class JpaPersonRepositoryTest {
 
     @BeforeEach
     void setUp() {
-        personRepository = new DomainPersonRepository(jpaPersonRepository, partyMapper);
+        personRepository = new DomainPersonRepository(jpaPersonRepository, jpaPartyRepository, partyMapper);
     }
 
     @AfterEach
@@ -114,6 +117,7 @@ class JpaPersonRepositoryTest {
         assertThat(jpaPersonRepository).isNotNull();
         assertThat(jpaAddressRepository).isNotNull();
         assertThat(addressMapper).isNotNull();
+        assertThat(jpaPartyRepository).isNotNull();
     }
 
     @Test
