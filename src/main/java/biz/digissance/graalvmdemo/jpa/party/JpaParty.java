@@ -32,10 +32,16 @@ import lombok.ToString;
 @DiscriminatorColumn(name = "party_type")
 @IdClass(PartyPK.class)
 @NamedEntityGraph(name = "Party.attributes",
-        attributeNodes =
-        @NamedAttributeNode(value = "addressProperties", subgraph = "addressProperties-subgraph"),
-        subgraphs = {@NamedSubgraph(name = "addressProperties-subgraph",
-                attributeNodes = {@NamedAttributeNode("address"), @NamedAttributeNode("use")})}
+        attributeNodes = {
+                @NamedAttributeNode(value = "authentications"),
+                @NamedAttributeNode(value = "addressProperties", subgraph = "addressProperties-subgraph"),
+                @NamedAttributeNode(value = "roles", subgraph = "roles-subgraph"),
+        },
+        subgraphs = {
+                @NamedSubgraph(name = "addressProperties-subgraph",
+                        attributeNodes = {@NamedAttributeNode("address"), @NamedAttributeNode("use")}),
+                @NamedSubgraph(name = "roles-subgraph", attributeNodes = {@NamedAttributeNode("type")}),
+        }
 )
 public abstract class JpaParty extends BaseEntity {
 
@@ -46,13 +52,13 @@ public abstract class JpaParty extends BaseEntity {
     private String name;
 
     @OneToMany(mappedBy = "party", orphanRemoval = true, cascade = CascadeType.ALL)
-    private  Set<JpaAddressProperty> addressProperties;// = new HashSet<>();
+    private Set<JpaAddressProperty> addressProperties = new HashSet<>();
 
     @OneToMany(mappedBy = "party", orphanRemoval = true, cascade = CascadeType.ALL)
-    private  Set<JpaPartyAuthentication> authentications;// = new HashSet<>();
+    private Set<JpaPartyAuthentication> authentications = new HashSet<>();
 
     @OneToMany(mappedBy = "party", orphanRemoval = true, cascade = CascadeType.ALL)
-    private  Set<JpaPartyRole> roles;// = new HashSet<>();
+    private Set<JpaPartyRole> roles = new HashSet<>();
 
     @PrePersist
     private void createIdentifier() {

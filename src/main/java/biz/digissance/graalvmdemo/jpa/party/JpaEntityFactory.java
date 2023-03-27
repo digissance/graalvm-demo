@@ -1,27 +1,25 @@
 package biz.digissance.graalvmdemo.jpa.party;
 
-import biz.digissance.graalvmdemo.domain.party.authentication.EmailPasswordAuthentication;
 import biz.digissance.graalvmdemo.jpa.party.address.JpaAddressProperty;
 import biz.digissance.graalvmdemo.jpa.party.address.JpaAddressPropertyRepository;
 import biz.digissance.graalvmdemo.jpa.party.address.JpaAddressRepository;
 import biz.digissance.graalvmdemo.jpa.party.address.JpaEmailAddress;
 import biz.digissance.graalvmdemo.jpa.party.address.JpaGeographicAddress;
-import biz.digissance.graalvmdemo.jpa.party.authentication.JpaEmailPasswordPartyAuthentication;
 import biz.digissance.graalvmdemo.jpa.party.authentication.JpaPartyAuthenticationRepository;
-import biz.digissance.graalvmdemo.jpa.party.person.JpaPerson;
 import biz.digissance.graalvmdemo.jpa.party.person.JpaPersonRepository;
 import biz.digissance.graalvmdemo.jpa.party.role.JpaPartyRole;
 import biz.digissance.graalvmdemo.jpa.party.role.JpaPartyRoleRepository;
 import biz.digissance.graalvmdemo.jpa.party.role.JpaPartyRoleType;
 import biz.digissance.graalvmdemo.jpa.party.role.JpaPartyRoleTypeRepository;
 import java.util.Optional;
+import net.liccioni.archetypes.address.Address;
 import net.liccioni.archetypes.address.AddressProperties;
 import net.liccioni.archetypes.address.EmailAddress;
 import net.liccioni.archetypes.address.GeographicAddress;
-import net.liccioni.archetypes.party.Person;
 import net.liccioni.archetypes.relationship.PartyRole;
 import net.liccioni.archetypes.relationship.PartyRoleType;
 import net.liccioni.archetypes.uniqueid.UniqueIdentifier;
+import org.mapstruct.Context;
 import org.mapstruct.ObjectFactory;
 import org.springframework.stereotype.Service;
 
@@ -52,12 +50,67 @@ public class JpaEntityFactory {
         this.partyRepository = partyRepository;
     }
 
+//    @ObjectFactory
+//    JpaPartyRoleType create(PartyRoleType partyRoleType) {
+//        return roleTypeRepository.findByName(partyRoleType.getName()).orElseGet(JpaPartyRoleType::new);
+//    }
+
     @ObjectFactory
-    JpaPartyRoleType create(PartyRoleType partyRoleType) {
+    JpaAddressProperty create(AddressProperties addressProperties, @Context JpaParty target) {
+        final var address = Optional.ofNullable(addressProperties)
+                .map(AddressProperties::getAddress).map(Address::getAddress).orElse("");
+        return Optional.ofNullable(target)
+                .flatMap(p -> p.getAddressProperties().stream()
+                        .filter(q -> address.equals(q.getAddress().getAddress()))
+                        .findFirst())
+                .orElseGet(JpaAddressProperty::new);
+    }
+
+    @ObjectFactory
+    JpaEmailAddress create(EmailAddress emailAddress, @Context JpaParty target) {
+        final var address = Optional.ofNullable(emailAddress).map(Address::getAddress).orElse("");
+        return Optional.ofNullable(target)
+                .flatMap(p -> p.getAddressProperties().stream()
+                        .map(JpaAddressProperty::getAddress)
+                        .filter(JpaEmailAddress.class::isInstance)
+                        .map(JpaEmailAddress.class::cast)
+                        .filter(q -> address.equals(q.getAddress()))
+                        .findFirst())
+                .orElseGet(JpaEmailAddress::new);
+    }
+
+    @ObjectFactory
+    JpaGeographicAddress create(GeographicAddress geographicAddress, @Context JpaParty target) {
+        final var address = Optional.ofNullable(geographicAddress).map(Address::getAddress).orElse("");
+        return Optional.ofNullable(target)
+                .flatMap(p -> p.getAddressProperties().stream()
+                        .map(JpaAddressProperty::getAddress)
+                        .filter(JpaGeographicAddress.class::isInstance)
+                        .map(JpaGeographicAddress.class::cast)
+                        .filter(q -> address.equals(q.getAddress()))
+                        .findFirst())
+                .orElseGet(JpaGeographicAddress::new);
+    }
+
+    @ObjectFactory
+    JpaPartyRoleType create(PartyRoleType partyRoleType, @Context JpaParty context) {
         return roleTypeRepository.findByName(partyRoleType.getName()).orElseGet(JpaPartyRoleType::new);
     }
 
     @ObjectFactory
+    JpaPartyRole create(PartyRole partyRole, @Context JpaParty context) {
+        return Optional.ofNullable(partyRole.getIdentifier())
+                .map(UniqueIdentifier::getId)
+                .flatMap(roleRepository::findByIdentifier)
+                .orElseGet(JpaPartyRole::new);
+    }
+/*
+//    @ObjectFactory
+    JpaPartyRoleType create(PartyRoleType partyRoleType) {
+        return roleTypeRepository.findByName(partyRoleType.getName()).orElseGet(JpaPartyRoleType::new);
+    }
+
+//    @ObjectFactory
     JpaPartyRole create(PartyRole partyRole) {
         return Optional.ofNullable(partyRole.getIdentifier())
                 .map(UniqueIdentifier::getId)
@@ -65,7 +118,7 @@ public class JpaEntityFactory {
                 .orElseGet(JpaPartyRole::new);
     }
 
-    @ObjectFactory
+//    @ObjectFactory
     JpaPerson create(Person person) {
         return Optional.ofNullable(person.getPartyIdentifier())
                 .map(UniqueIdentifier::getId)
@@ -73,30 +126,20 @@ public class JpaEntityFactory {
                 .orElseGet(JpaPerson::new);
     }
 
-    @ObjectFactory
-    JpaEmailAddress create(EmailAddress address) {
-        return addressRepository.findByAddress(address.getAddress())
-                .map(JpaEmailAddress.class::cast)
-                .orElseGet(JpaEmailAddress::new);
-    }
+//
 
-    @ObjectFactory
-    JpaGeographicAddress create(GeographicAddress address) {
-        return addressRepository.findByAddress(address.getAddress())
-                .map(JpaGeographicAddress.class::cast)
-                .orElseGet(JpaGeographicAddress::new);
-    }
+//
 
-    @ObjectFactory
+//    @ObjectFactory
     JpaAddressProperty create(AddressProperties properties) {
         return addressPropertyRepository.findByAddress_Address(properties.getAddress().getAddress())
                 .orElseGet(JpaAddressProperty::new);
     }
 
-    @ObjectFactory
+//    @ObjectFactory
     JpaEmailPasswordPartyAuthentication create(EmailPasswordAuthentication authentication) {
         return authRepository.findByEmailAddress(authentication.getEmailAddress())
-                .map(JpaEmailPasswordPartyAuthentication.class::cast)
+//                .map(JpaEmailPasswordPartyAuthentication.class::cast)
                 .orElseGet(JpaEmailPasswordPartyAuthentication::new);
-    }
+    }*/
 }

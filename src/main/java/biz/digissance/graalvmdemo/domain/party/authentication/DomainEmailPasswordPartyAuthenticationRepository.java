@@ -19,10 +19,10 @@ public class DomainEmailPasswordPartyAuthenticationRepository implements EmailPa
     @Override
     public Optional<EmailPasswordAuthenticationProjection> findByEmailAddress(final String username) {
         return repository.findByEmailAddress(username)
-                .map(JpaEmailPasswordPartyAuthentication.class::cast)
+//                .map(JpaEmailPasswordPartyAuthentication.class::cast)
                 .map(p -> EmailPasswordAuthenticationProjection.builder()
                         .password(p.getPassword())
-                        .roles(mapper.toDomain(p.getParty()).getRoles())
+                        .roles(mapper.toPartyDomain(p.getParty()).getRoles())
                         .build());
     }
 }

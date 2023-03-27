@@ -24,6 +24,6 @@ public class AppConfig {
     public PartyService partyService(final PersonRepository personRepository,
                                      final PartyMapper partyMapper,
                                      final PasswordEncoder passwordEncoder){
-        return new PartyServiceImpl(personRepository,partyMapper, passwordEncoder);
+        return new PartyServiceImpl(personRepository, partyMapper, passwordEncoder);
     }
 }

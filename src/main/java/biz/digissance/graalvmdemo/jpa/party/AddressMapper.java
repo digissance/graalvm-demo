@@ -22,27 +22,5 @@ import org.mapstruct.SubclassMapping;
 )
 public interface AddressMapper {
 
-    @SubclassMapping(target = EmailAddress.class, source = JpaEmailAddress.class)
-    @SubclassMapping(target = GeographicAddress.class, source = JpaGeographicAddress.class)
-    Address toDomain(JpaAddress address);
 
-    EmailAddress toEmailAddressDomain(JpaEmailAddress emailAddress);
-
-    @InheritInverseConfiguration(name = "toDomain")
-    JpaAddress toEntity(Address address);
-
-//    JpaEmailAddress toJpaEmailAddress(EmailAddress address);
-//    JpaGeographicAddress toJpaGeographicAddress(GeographicAddress address);
-
-    default String toJpaCountry(Locale country) {
-        return country.getIdentifier();
-    }
-
-    default Locale toCountry(String countryCode) {
-        final var locale = new java.util.Locale("", countryCode);
-        return ISOCountryCode.builder()
-                .name(locale.getDisplayCountry())
-                .identifier(countryCode)
-                .build();
-    }
 }

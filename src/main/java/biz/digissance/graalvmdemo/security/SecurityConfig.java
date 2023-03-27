@@ -4,8 +4,8 @@ import biz.digissance.graalvmdemo.domain.party.DomainPartyRepository;
 import biz.digissance.graalvmdemo.domain.party.PartyRepository;
 import biz.digissance.graalvmdemo.domain.party.authentication.DomainEmailPasswordPartyAuthenticationRepository;
 import biz.digissance.graalvmdemo.domain.party.authentication.EmailPasswordPartyAuthenticationRepository;
-import biz.digissance.graalvmdemo.jpa.party.JpaPartyRepository;
 import biz.digissance.graalvmdemo.jpa.party.PartyMapper;
+import biz.digissance.graalvmdemo.jpa.party.JpaPartyRepository;
 import biz.digissance.graalvmdemo.jpa.party.authentication.JpaPartyAuthenticationRepository;
 import java.io.Serializable;
 import org.springframework.beans.factory.annotation.Value;
@@ -89,7 +89,7 @@ public class SecurityConfig {
         return http
                 .authenticationProvider(daoAuthProvider)
                 .authorizeHttpRequests(p -> {
-                    p.requestMatchers("/", "/login", "/register/**").permitAll();
+                    p.requestMatchers("/", "/login", "/register/**","/error").permitAll();
                     p.anyRequest().authenticated();
                 })
                 .csrf().disable()

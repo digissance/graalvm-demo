@@ -7,7 +7,7 @@ spring:
   datasource:
     url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/graalvm-demo}
     username: ${SPRING_DATASOURCE_USERNAME:graalvm-demo}
-    password: ${SPRING_DATASOURCE_PASSWORD:'Postgr@s321!'}
+    password: ${SPRING_DATASOURCE_PASSWORD:Postgr@s321!}
   jpa:
     open-in-view: false
     hibernate:
