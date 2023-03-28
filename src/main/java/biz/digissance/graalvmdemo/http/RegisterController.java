@@ -20,30 +20,26 @@ public class RegisterController {
 
     @GetMapping("/register")
     public String showRegistrationForm(Model model) {
-        // create model object to store form data
-//        UserDto user = new UserDto();
-        model.addAttribute("user", new PersonDTO());
+        model.addAttribute("user", new RegisterRequest());
         return "register";
     }
 
     @PostMapping("/register/save")
     public String registration(
-            @Valid @ModelAttribute("user") PersonDTO userDto,
+            @Valid @ModelAttribute("user") RegisterRequest userDto,
             BindingResult result,
             Model model) {
 //        User existingUser = userService.findUserByEmail(userDto.getEmail());
-        partyService.register(userDto);
 //        if(existingUser != null && existingUser.getEmail() != null && !existingUser.getEmail().isEmpty()){
 //            result.rejectValue("email", null,
 //                    "There is already an account registered with the same email");
 //        }
 
-//        if(result.hasErrors()){
-//            model.addAttribute("user", userDto);
+        if (result.hasErrors()) {
+            model.addAttribute("user", userDto);
+            return "register";
+        }
+        partyService.register(userDto);
         return "redirect:/register?success";
-//        }
-
-//        userService.saveUser(userDto);
-//        return "redirect:/register?success";
     }
 }

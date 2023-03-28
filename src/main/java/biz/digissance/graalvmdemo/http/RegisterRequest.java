@@ -17,7 +17,7 @@ import lombok.extern.jackson.Jacksonized;
 @Jacksonized
 @AllArgsConstructor
 @NoArgsConstructor
-public class PersonDTO{
+public class RegisterRequest {
 
     @NotEmpty
     private String firstName;

@@ -10,5 +10,5 @@ public interface JpaPartyAuthenticationRepository extends JpaRepository<JpaParty
             "inner join fetch auth.party party " +
             "inner join fetch party.roles role " +
             "inner join fetch role.type where auth.emailAddress = ?1")
-    Optional<JpaPartyAuthentication> findByEmailAddress(String emailAddress);
+    Optional<JpaEmailPasswordPartyAuthentication> findByEmailAddress(String emailAddress);
 }

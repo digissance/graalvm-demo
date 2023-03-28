@@ -6,6 +6,7 @@ import jakarta.persistence.DiscriminatorColumn;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -18,6 +19,7 @@ import lombok.ToString;
 @DiscriminatorColumn(name = "address_type")
 public abstract class JpaAddress extends BaseEntity {
 
+    @NotEmpty
     @Column(nullable = false, unique = true)
     String address;
 }

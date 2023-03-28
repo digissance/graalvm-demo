@@ -16,5 +16,5 @@ public interface PersonRepository {
 
     Optional<Person> findByIdentifier(final String identifier);
 
-    Person removeAddress(final String id, final Predicate<AddressProperties> addressMatcher);
+//    Person removeAddress(final String id, final Predicate<AddressProperties> addressMatcher);
 }

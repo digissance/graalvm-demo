@@ -1,6 +1,6 @@
 package biz.digissance.graalvmdemo.domain.party;
 
-import biz.digissance.graalvmdemo.http.PersonDTO;
+import biz.digissance.graalvmdemo.http.RegisterRequest;
 import biz.digissance.graalvmdemo.jpa.party.PartyMapper;
 import net.liccioni.archetypes.party.Party;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -21,8 +21,8 @@ public class PartyServiceImpl implements PartyService {
     }
 
     @Override
-    public Party register(final PersonDTO personDto) {
-        final var person = partyMapper.toPersonDomain(personDto, passwordEncoder.encode(personDto.getPassword()));
+    public Party register(final RegisterRequest registerRequest) {
+        final var person = partyMapper.toPersonDomain(registerRequest, passwordEncoder.encode(registerRequest.getPassword()));
         return personRepository.create(person);
     }
 }

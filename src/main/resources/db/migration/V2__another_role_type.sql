@@ -1,0 +1,1 @@
+INSERT INTO public.jpa_party_role_type (pk, created_by, created_date, modified_by, modified_date, version, description, name) VALUES (204, 'anonymousUser', '2023-03-28 08:05:35.595764 +00:00', 'anonymousUser', '2023-03-28 08:05:35.595764 +00:00', 0, 'Basic user', 'USER');
