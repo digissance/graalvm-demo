@@ -57,7 +57,7 @@ jobs:
       - name: Retrieve version
         id: version
         run: |
-          echo "$(./gradlew getCurrentVersion)"
+          echo "APP_VERSION=$(./gradlew getCurrentVersion | grep -v -e '^$\|^>\|^BUILD')" >> $GITHUB_ENV
 
       - name: Context
         uses: okteto/context@latest
