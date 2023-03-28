@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head th:fragment="head(title)">
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -64,11 +64,11 @@
                 <li class="nav-item">
                     <a class="nav-link" href="#pricing" th:href="@{/#pricing}">Pricing</a>
                 </li>
-                <li class="nav-item dropdown">
+                <li sec:authorize="hasRole('ROLE_ADMIN')" class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="dropdown01" data-bs-toggle="dropdown"
-                       aria-expanded="false">Drop</a>
+                       aria-expanded="false">Manage Site</a>
                     <ul class="dropdown-menu" aria-labelledby="dropdown01">
-                        <li><a class="dropdown-item" href="article.html">Article Details</a></li>
+                        <li><a class="dropdown-item" href="article.html" th:href="@{/admin/party-role-types}">Role Types</a></li>
                         <li>
                             <div class="dropdown-divider"></div>
                         </li>
@@ -81,8 +81,9 @@
                 </li>
             </ul>
             <span class="nav-item">
-                        <a class="btn-outline-sm" href="login.html" th:href="@{/login}">Log in</a>
-                    </span>
+                <a sec:authorize="isAuthenticated()" class="btn-outline-sm" href="login.html" th:href="@{/logout}">Log out</a>
+                <a sec:authorize="!isAuthenticated()" class="btn-outline-sm" href="login.html" th:href="@{/login}">Log in</a>
+            </span>
         </div> <!-- end of navbar-collapse -->
     </div> <!-- end of container -->
 </nav> <!-- end of navbar -->

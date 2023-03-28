@@ -13,7 +13,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 
 
 @Disabled
-@WebMvcTest(PersonController.class)
+@WebMvcTest(RegisterController.class)
 class PersonControllerTest {
 
     @MockBean

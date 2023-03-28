@@ -1,11 +1,8 @@
 package biz.digissance.graalvmdemo.security;
 
-import biz.digissance.graalvmdemo.domain.party.DomainPartyRepository;
-import biz.digissance.graalvmdemo.domain.party.PartyRepository;
 import biz.digissance.graalvmdemo.domain.party.authentication.DomainEmailPasswordPartyAuthenticationRepository;
 import biz.digissance.graalvmdemo.domain.party.authentication.EmailPasswordPartyAuthenticationRepository;
 import biz.digissance.graalvmdemo.jpa.party.PartyMapper;
-import biz.digissance.graalvmdemo.jpa.party.JpaPartyRepository;
 import biz.digissance.graalvmdemo.jpa.party.authentication.JpaPartyAuthenticationRepository;
 import java.io.Serializable;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,7 +17,6 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -28,9 +24,9 @@ import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
-@Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
+@Configuration(proxyBeanMethods = false)
 public class SecurityConfig {
 
     @Value("${SECURITY_DEBUG_ENABLED:false}")
@@ -61,35 +57,10 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(final HttpSecurity http,
                                                    final AuthenticationProvider daoAuthProvider,
                                                    final UserDetailsService userDetailsService) throws Exception {
-//        http
-//                .authorizeHttpRequests((requests) -> requests
-//                        .requestMatchers("/", "/home").permitAll()
-//                        .anyRequest().authenticated()
-//                )
-//                .formLogin((form) -> form
-//                        .loginPage("/login")
-//                        .permitAll()
-//                )
-//                .logout((logout) -> logout.permitAll());
-
-//        return http
-//                .csrf(AbstractHttpConfigurer::disable)
-//                .anonymous().disable()
-//                .httpBasic()
-//                .and()
-//                .sessionManagement().disable()
-//                .securityContext().disable()//.securityContextRepository(new NullSecurityContextRepository()).and()
-//                .requestCache().disable()
-//                .logout().disable()
-//                .exceptionHandling().disable()
-//                .headers().disable()
-//                .sessionManagement(p -> p.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-//                .authorizeHttpRequests().anyRequest().permitAll().and()
-//                .build();
         return http
                 .authenticationProvider(daoAuthProvider)
                 .authorizeHttpRequests(p -> {
-                    p.requestMatchers("/", "/login", "/register/**","/error").permitAll();
+                    p.requestMatchers("/", "/login", "/register/**", "/error").permitAll();
                     p.anyRequest().authenticated();
                 })
                 .csrf().disable()
@@ -105,16 +76,8 @@ public class SecurityConfig {
                                 .defaultSuccessUrl("/")
 //                                .permitAll()
                 ).sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .anonymous(AbstractHttpConfigurer::disable)
+//                .anonymous(AbstractHttpConfigurer::disable)
                 .build();
-    }
-
-    @Bean
-    public PartyRepository partyAuthenticationRepository(
-            final JpaPartyRepository repository,
-            final PartyMapper mapper,
-            final JpaPartyAuthenticationRepository authRepository) {
-        return new DomainPartyRepository(repository, authRepository, mapper);
     }
 
     @Bean

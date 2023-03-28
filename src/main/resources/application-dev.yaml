@@ -1,9 +1,12 @@
 logging:
   level:
+    root: INFO
     org:
       springframework:
         security: TRACE
 spring:
+  flyway:
+    enabled: true
   datasource:
     url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/graalvm-demo}
     username: ${SPRING_DATASOURCE_USERNAME:graalvm-demo}
@@ -11,7 +14,7 @@ spring:
   jpa:
     open-in-view: false
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: update
     show-sql: true
     properties:
       hibernate:

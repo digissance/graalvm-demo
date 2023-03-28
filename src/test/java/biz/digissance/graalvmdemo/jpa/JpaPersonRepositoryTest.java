@@ -11,6 +11,7 @@ import biz.digissance.graalvmdemo.jpa.party.PartyMapper;
 import biz.digissance.graalvmdemo.jpa.party.address.JpaAddressRepository;
 import biz.digissance.graalvmdemo.jpa.party.person.JpaPersonRepository;
 import jakarta.persistence.EntityManager;
+import java.util.List;
 import java.util.Set;
 import javax.sql.DataSource;
 import net.liccioni.archetypes.address.AddressProperties;
@@ -31,6 +32,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 @ExtendWith(SpringExtension.class)
@@ -80,7 +82,7 @@ class JpaPersonRepositoryTest {
                     .use(Set.of("home"))
                     .address(GeographicAddress.builder()
                             .country(spain)
-                            .addressLine(Set.of("C/ Valencia 138"))
+                            .addressLine(List.of("C/ Valencia 138"))
                             .regionOrState("Barcelona")
                             .city("Barcelona")
                             .zipOrPostCode("08018")
@@ -92,7 +94,7 @@ class JpaPersonRepositoryTest {
                     .use(Set.of("work"))
                     .address(GeographicAddress.builder()
                             .country(spain)
-                            .addressLine(Set.of("C/ Pujades 54"))
+                            .addressLine(List.of("C/ Pujades 54"))
                             .regionOrState("Barcelona")
                             .city("Barcelona")
                             .zipOrPostCode("08018")
@@ -124,8 +126,8 @@ class JpaPersonRepositoryTest {
     void shouldSavePerson() {
 
         final var created = personRepository.create(someGuy);
-        assertThat(created).usingRecursiveComparison().ignoringFields("partyIdentifier").isEqualTo(someGuy);
-        assertThat(created.getPartyIdentifier()).isNotNull();
+        assertThat(created).usingRecursiveComparison().ignoringFields("identifier").isEqualTo(someGuy);
+        assertThat(created.getIdentifier()).isNotNull();
     }
 
     @Test
@@ -134,9 +136,9 @@ class JpaPersonRepositoryTest {
 
         someGuy.getAddressProperties().add(personalEmail);
         final var created = personRepository.create(someGuy);
-        assertThat(created).usingRecursiveComparison().ignoringFields("partyIdentifier").isEqualTo(someGuy);
-        assertThat(created.getPartyIdentifier()).isNotNull();
-        assertThat(created.getPartyIdentifier().getId()).isNotNull();
+        assertThat(created).usingRecursiveComparison().ignoringFields("identifier").isEqualTo(someGuy);
+        assertThat(created.getIdentifier()).isNotNull();
+        assertThat(created.getIdentifier().getId()).isNotNull();
     }
 
     @Test
@@ -151,7 +153,7 @@ class JpaPersonRepositoryTest {
                 .filter(p -> p.getUse().contains("home")).findFirst().orElseThrow();
         final var newHomeAddress = oldHomeAddress.toBuilder()
                 .address(GeographicAddress.builder()
-                        .addressLine(Set.of("C/ Pere IV 121"))
+                        .addressLine(List.of("C/ Pere IV 121"))
                         .regionOrState("Barcelona")
                         .city("Barcelona")
                         .zipOrPostCode("08018")
@@ -162,7 +164,7 @@ class JpaPersonRepositoryTest {
         created.getAddressProperties().add(newHomeAddress);
         final var modified = personRepository.update(created);
         entityManager.flush();
-        final var actual = personRepository.findByIdentifier(created.getPartyIdentifier().getId()).orElseThrow();
+        final var actual = personRepository.findByIdentifier(created.getIdentifier().getId()).orElseThrow();
         assertThat(actual).usingRecursiveComparison().ignoringCollectionOrder().isEqualTo(modified);
     }
 
@@ -171,7 +173,7 @@ class JpaPersonRepositoryTest {
 
         someGuy.getAddressProperties().add(personalEmail);
         final var created = personRepository.create(someGuy);
-        final var actual = personRepository.findByIdentifier(created.getPartyIdentifier().getId()).orElseThrow();
+        final var actual = personRepository.findByIdentifier(created.getIdentifier().getId()).orElseThrow();
         assertThat(actual).usingRecursiveComparison().ignoringCollectionOrder().isEqualTo(created);
     }
 
@@ -201,7 +203,7 @@ class JpaPersonRepositoryTest {
         created.getAddressProperties().add(homeAddress);
         final var modified = personRepository.update(created);
         entityManager.flush();
-        final var actual = personRepository.findByIdentifier(created.getPartyIdentifier().getId()).orElseThrow();
+        final var actual = personRepository.findByIdentifier(created.getIdentifier().getId()).orElseThrow();
         assertThat(actual).usingRecursiveComparison().ignoringCollectionOrder().isEqualTo(modified);
     }
 
@@ -212,7 +214,7 @@ class JpaPersonRepositoryTest {
         someGuy.getAddressProperties().add(personalEmail);
         final var created = personRepository.create(someGuy);
         entityManager.flush();
-        final var actual = personRepository.findByIdentifier(created.getPartyIdentifier().getId()).orElseThrow();
+        final var actual = personRepository.findByIdentifier(created.getIdentifier().getId()).orElseThrow();
         assertThat(actual).usingRecursiveComparison().ignoringCollectionOrder().isEqualTo(created);
 //        jpaPersonRepository.deleteAll();
     }
@@ -226,9 +228,9 @@ class JpaPersonRepositoryTest {
 //        someGuy.getAddressProperties().add(personalEmail);
         final var created = personRepository.create(someGuy);
         entityManager.flush();
-        assertThat(created).usingRecursiveComparison().ignoringFields("partyIdentifier").isEqualTo(someGuy);
-        assertThat(created.getPartyIdentifier()).isNotNull();
-        assertThat(created.getPartyIdentifier().getId()).isNotNull();
+        assertThat(created).usingRecursiveComparison().ignoringFields("identifier").isEqualTo(someGuy);
+        assertThat(created.getIdentifier()).isNotNull();
+        assertThat(created.getIdentifier().getId()).isNotNull();
     }
 
     @Test
@@ -239,9 +241,9 @@ class JpaPersonRepositoryTest {
                         .build());
         final var created = personRepository.create(someGuy);
         assertThat(created).usingRecursiveComparison()
-                .ignoringFields("partyIdentifier", "roles.identifier").isEqualTo(someGuy);
-        assertThat(created.getPartyIdentifier()).isNotNull();
-        assertThat(created.getPartyIdentifier().getId()).isNotNull();
+                .ignoringFields("identifier", "roles.identifier").isEqualTo(someGuy);
+        assertThat(created.getIdentifier()).isNotNull();
+        assertThat(created.getIdentifier().getId()).isNotNull();
     }
 
     @Test
@@ -249,6 +251,14 @@ class JpaPersonRepositoryTest {
         someGuy.getAddressProperties().add(personalEmail);
         someGuy.getAddressProperties().add(homeAddress);
         someGuy.getAddressProperties().add(workAddress);
+        someGuy.getRoles()
+                .add(PartyRole.builder()
+                        .type(PartyRoleType.builder().name("Developer").description("Java Developer").build())
+                        .build());
+        someGuy.getAuthentications().add(EmailPasswordAuthentication.builder()
+                .emailAddress(personalEmail.getAddress().getAddress())
+                .password("password")
+                .build());
         final var created = personRepository.create(someGuy);
         entityManager.flush();
         final Person modified = created.toBuilder().personName(created.getPersonName().toBuilder()

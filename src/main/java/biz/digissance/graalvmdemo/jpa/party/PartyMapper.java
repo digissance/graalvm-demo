@@ -1,7 +1,7 @@
 package biz.digissance.graalvmdemo.jpa.party;
 
 import biz.digissance.graalvmdemo.domain.party.authentication.EmailPasswordAuthentication;
-import biz.digissance.graalvmdemo.http.PersonDTO;
+import biz.digissance.graalvmdemo.http.RegisterRequest;
 import biz.digissance.graalvmdemo.jpa.DateTimeMapper;
 import biz.digissance.graalvmdemo.jpa.base.BaseEntity;
 import biz.digissance.graalvmdemo.jpa.base.LazyLoadingAwareMapper;
@@ -54,16 +54,18 @@ public abstract class PartyMapper implements LazyLoadingAwareMapper {
 
     @SubclassMapping(target = JpaPerson.class, source = Person.class)
     @SubclassMapping(target = JpaOrganization.class, source = Organization.class)
-    @Mapping(target = "identifier", source = "partyIdentifier")
     public abstract JpaParty toPartyJpa(final Party party);
 
-//    @Mapping(target = "identifier", source = "partyIdentifier.id")
-//    public abstract JpaPerson toPersonJpa(final Person person);
 
-    @Mapping(target = "identifier", source = "partyIdentifier.id")
-    public abstract void toPersonJpaForUpdate(final Person person,
-                                              final @MappingTarget JpaPerson jpaPerson,
-                                              final @Context JpaParty context);
+    @Mapping(target = "authentications", qualifiedBy = WithPartyContext.class)
+    public abstract void toPartyJpaForUpdate(final Person person,
+                                             final @MappingTarget JpaPerson jpaPerson,
+                                             final @Context JpaParty context);
+
+    @Mapping(target = "authentications", qualifiedBy = WithPartyContext.class)
+    public abstract void toPartyJpaForUpdate(final Organization organization,
+                                             final @MappingTarget JpaOrganization jpaOrganization,
+                                             final @Context JpaParty context);
 
     @SubclassMapping(target = JpaEmailAddress.class, source = EmailAddress.class)
     @SubclassMapping(target = JpaGeographicAddress.class, source = GeographicAddress.class)
@@ -72,11 +74,13 @@ public abstract class PartyMapper implements LazyLoadingAwareMapper {
     @SubclassMapping(target = JpaEmailPasswordPartyAuthentication.class, source = EmailPasswordAuthentication.class)
     public abstract JpaPartyAuthentication toAuthJpa(final PartyAuthentication authentication);
 
+    @WithPartyContext
+    @SubclassMapping(target = JpaEmailPasswordPartyAuthentication.class, source = EmailPasswordAuthentication.class)
+    public abstract JpaPartyAuthentication toAuthJpaWithContext(final PartyAuthentication authentication,
+                                                                final @Context JpaParty jpaParty);
+
     @InheritInverseConfiguration(name = "toPartyJpa")
     public abstract Party toPartyDomain(final JpaParty jpaParty);
-
-//    @InheritInverseConfiguration(name = "toPersonJpa")
-//    public abstract Person toPersonDomain(final JpaPerson jpaPerson);
 
     @InheritInverseConfiguration(name = "toAuthJpa")
     public abstract PartyAuthentication toAuthDomain(final JpaPartyAuthentication jpaPartyAuthentication);
@@ -84,7 +88,6 @@ public abstract class PartyMapper implements LazyLoadingAwareMapper {
     @InheritInverseConfiguration(name = "toAddressJpa")
     public abstract Address toAddressDomain(final JpaAddress jpaAddress);
 
-    //    @InheritInverseConfiguration(name = "toPartyRoleJpa")
     @Mapping(target = "party", ignore = true)
     public abstract PartyRole toPartyRoleDomain(final JpaPartyRole jpaPartyRole);
 
@@ -130,14 +133,14 @@ public abstract class PartyMapper implements LazyLoadingAwareMapper {
         target.getRoles().forEach(p -> p.setParty(target));
     }
 
-    public Person toPersonDomain(PersonDTO personDto, final String password) {
+    public Person toPersonDomain(RegisterRequest registerRequest, final String password) {
         final EmailAddress emailAddress = EmailAddress.builder()
-                .emailAddress(personDto.getEmail())
+                .emailAddress(registerRequest.getEmail())
                 .build();
         return Person.builder()
                 .personName(PersonName.builder()
-                        .givenName(personDto.getFirstName())
-                        .familyName(personDto.getLastName())
+                        .givenName(registerRequest.getFirstName())
+                        .familyName(registerRequest.getLastName())
                         .build())
                 .addressProperties(Set.of(AddressProperties.builder()
                         .use(Set.of("authentication"))

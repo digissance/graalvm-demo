@@ -1,9 +1,9 @@
 package biz.digissance.graalvmdemo.domain.party;
 
-import biz.digissance.graalvmdemo.http.PersonDTO;
+import biz.digissance.graalvmdemo.http.RegisterRequest;
 import net.liccioni.archetypes.party.Party;
 
 public interface PartyService {
 
-    Party register(PersonDTO personDTO);
+    Party register(RegisterRequest registerRequest);
 }

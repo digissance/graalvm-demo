@@ -28,7 +28,11 @@
                     <div class="col-xl-6 offset-xl-3">
                         <div class="text-box mt-5 mb-5">
                             <p class="mb-4">Fill out the form below to sign up for the service. Already signed up? Then just <a class="blue" href="log-in.html">Log In</a></p>
-
+                            <div th:if="${param.success}">
+                                <div class="alert alert-info">
+                                    You have successfully registered our app!
+                                </div>
+                            </div>
                             <!-- Sign Up Form -->
                             <form method="post"
                                   th:action="@{/register/save}"
@@ -36,11 +40,14 @@
                                 <div class="mb-4 form-floating">
                                     <input type="email" th:field="*{email}" class="form-control" id="floatingInput" placeholder="name@example.com">
                                     <label for="floatingInput">Email address</label>
+                                    <p th:errors = "*{email}" class="text-danger"
+                                       th:if="${#fields.hasErrors('email')}"></p>
                                 </div>
                                 <div class="mb-4 form-floating">
                                     <input type="text" th:field="*{firstName}" class="form-control" id="floatingInput2" placeholder="First name">
                                     <label for="floatingInput">First name</label>
-
+                                    <p th:errors = "*{firstName}" class="text-danger"
+                                       th:if="${#fields.hasErrors('firstName')}"></p>
                                 </div>
                                 <div class="mb-4 form-floating">
                                     <input type="text" th:field="*{lastName}" class="form-control" id="floatingInput3" placeholder="Last name">
@@ -51,6 +58,8 @@
                                 <div class="mb-4 form-floating">
                                     <input type="password" th:field="*{password}" class="form-control" id="floatingPassword" placeholder="Password">
                                     <label for="floatingPassword">Password</label>
+                                    <p th:errors = "*{password}" class="text-danger"
+                                       th:if="${#fields.hasErrors('password')}"></p>
                                 </div>
                                 <div class="mb-4 form-check">
                                     <input type="checkbox" class="form-check-input" id="exampleCheck1">

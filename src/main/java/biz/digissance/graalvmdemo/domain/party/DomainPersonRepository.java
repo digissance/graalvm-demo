@@ -32,8 +32,8 @@ public class DomainPersonRepository implements PersonRepository {
 
     @Override
     public Person update(final Person person) {
-        final var jpaPerson = repository.findByIdentifier(person.getPartyIdentifier().getId()).orElseThrow();
-        mapper.toPersonJpaForUpdate(person, jpaPerson, jpaPerson);
+        final var jpaPerson = repository.findByIdentifier(person.getIdentifier().getId()).orElseThrow();
+        mapper.toPartyJpaForUpdate(person, jpaPerson, jpaPerson);
         return (Person) mapper.toPartyDomain(partyRepository.save(jpaPerson));
     }
 
