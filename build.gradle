@@ -82,5 +82,5 @@ jib {
 }
 
 task getCurrentVersion {
-    println semver.version
+    print semver.version
 }
