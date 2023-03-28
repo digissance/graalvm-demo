@@ -59,11 +59,19 @@ jobs:
         with:
           token: ${{ secrets.OKTETO_TOKEN }}
 
+      - name: Retrieve version
+        uses: gradle/gradle-build-action@v2
+#        with:
+#          arguments: getCurrentVersion
+        run: |
+          echo "TAG_NAME=$(./gradlew getCurrentVersion)" >> $GITHUB_OUTPUT
+        id: version
+
       - name: Deploy preview environment
         uses: okteto/deploy-preview@latest
         env:
           GITHUB_TOKEN: ${{ secrets.OKTETO_PREVIEW_TOKEN }}
         with:
           name: pr-${{ github.event.number }}-${{ github.actor }}
-          variables: APP_VERSION=${{ github.sha }},SPRING_PROFILE=dev
+          variables: APP_VERSION=${{ steps.version.outputs.TAG_NAME }},SPRING_PROFILE=dev
           timeout: 15m
