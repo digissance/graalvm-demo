@@ -62,7 +62,7 @@ jobs:
       - name: Retrieve version
         id: version
         run: |
-            echo "FOO=78" >> $GITHUB_ENV
+          echo "FOO=$(./gradlew getCurrentVersion)" >> $GITHUB_ENV
 
       - name: Deploy preview environment
         uses: okteto/deploy-preview@latest
