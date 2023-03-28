@@ -60,12 +60,9 @@ jobs:
           token: ${{ secrets.OKTETO_TOKEN }}
 
       - name: Retrieve version
-#        uses: gradle/gradle-build-action@v2
-#        with:
-#          arguments: getCurrentVersion
-        run: |
-          echo "$(./gradlew getCurrentVersion)"
         id: version
+        run: |
+            echo "FOO=$(git status)" >> $GITHUB_ENV
 
       - name: Deploy preview environment
         uses: okteto/deploy-preview@latest
@@ -73,5 +70,5 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.OKTETO_PREVIEW_TOKEN }}
         with:
           name: pr-${{ github.event.number }}-${{ github.actor }}
-          variables: APP_VERSION=${{ steps.version.outputs.TAG_NAME }},SPRING_PROFILE=dev
+          variables: APP_VERSION=${{ env.FOO }},SPRING_PROFILE=dev
           timeout: 15m
