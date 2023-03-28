@@ -54,6 +54,11 @@ jobs:
         with:
           arguments: jib
 
+      - name: Retrieve version
+        id: version
+        run: |
+          echo "APP_VERSION=$(./gradlew getCurrentVersion | grep -v -e '^$\|^>\|^BUILD')" >> $GITHUB_ENV
+
       - name: Context
         uses: okteto/context@latest
         with:
@@ -65,5 +70,5 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.OKTETO_PREVIEW_TOKEN }}
         with:
           name: pr-${{ github.event.number }}-${{ github.actor }}
-          variables: APP_VERSION=${{ github.sha }},SPRING_PROFILE=dev
+          variables: APP_VERSION=${{ env.APP_VERSION }},SPRING_PROFILE=dev
           timeout: 15m

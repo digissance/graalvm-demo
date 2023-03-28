@@ -80,3 +80,7 @@ jib {
         tags = [semver.version, gitCommit] as List<String>
     }
 }
+
+task getCurrentVersion {
+    print semver.version
+}
