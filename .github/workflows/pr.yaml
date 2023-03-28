@@ -64,7 +64,8 @@ jobs:
 #        with:
 #          arguments: getCurrentVersion
         run: |
-          echo "TAG_NAME=$(./gradlew getCurrentVersion)"
+#          echo "TAG_NAME=$(./gradlew getCurrentVersion)"
+          echo ./gradlew getCurrentVersion
         id: version
 
       - name: Deploy preview environment
