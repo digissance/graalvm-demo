@@ -60,7 +60,7 @@ jobs:
           token: ${{ secrets.OKTETO_TOKEN }}
 
       - name: Retrieve version
-        uses: gradle/gradle-build-action@v2
+#        uses: gradle/gradle-build-action@v2
 #        with:
 #          arguments: getCurrentVersion
         run: |
