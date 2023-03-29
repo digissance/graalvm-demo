@@ -19,6 +19,6 @@ public class PartyRoleTypeController {
     @GetMapping("/party-role-types")
     public String partyRoleTypesView(Model model) {
         model.addAttribute("roleTypes", repository.findAll());
-        return "party-role-types";
+        return "party-role-type/index";
     }
 }

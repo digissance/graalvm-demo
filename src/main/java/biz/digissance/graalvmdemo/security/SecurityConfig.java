@@ -36,7 +36,7 @@ public class SecurityConfig {
     public WebSecurityCustomizer webSecurityCustomizer() {
 
         return (web) -> web.ignoring()
-                .requestMatchers("/actuator/**", "/css/**", "/images/**", "/js/**", "/webfonts/**")
+//                .requestMatchers("/actuator/**", "/css/**", "/images/**", "/js/**", "/webfonts/**")
                 .and().debug(securityDebugEnable);
     }
 
@@ -46,9 +46,10 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationProvider authenticationProvider(UserDetailsService userDetailsService) {
+    public AuthenticationProvider authenticationProvider(final UserDetailsService userDetailsService,
+                                                         final PasswordEncoder passwordEncoder) {
         final var daoAuthenticationProvider = new DaoAuthenticationProvider();
-        daoAuthenticationProvider.setPasswordEncoder(passwordEncoder());
+        daoAuthenticationProvider.setPasswordEncoder(passwordEncoder);
         daoAuthenticationProvider.setUserDetailsService(userDetailsService);
         return daoAuthenticationProvider;
     }
@@ -60,7 +61,8 @@ public class SecurityConfig {
         return http
                 .authenticationProvider(daoAuthProvider)
                 .authorizeHttpRequests(p -> {
-                    p.requestMatchers("/", "/login", "/register/**", "/error").permitAll();
+                    p.requestMatchers("/", "/login", "/register/**", "/error",
+                            "/actuator/**", "/css/**", "/images/**", "/js/**", "/webfonts/**").permitAll();
                     p.anyRequest().authenticated();
                 })
                 .csrf().disable()

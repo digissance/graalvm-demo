@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="fragments/head.html :: head('Party Role Types')"></head>
+<head th:replace="~{fragments/head.html :: head('Party Role Types')}"></head>
 <body>
 
 <!-- Navigation -->
-<nav th:replace="fragments/head.html :: navigation"></nav>
+<nav th:replace="~{fragments/head.html :: navigation}"></nav>
 <!-- end of navbar -->
 <!-- end of navigation -->
 
@@ -66,7 +66,7 @@
 
 
 <!-- Footer -->
-<div th:replace="fragments/head.html :: footer" class="footer"></div> <!-- end of footer -->
+<div th:replace="~{fragments/head.html :: footer}" class="footer"></div> <!-- end of footer -->
 <!-- end of footer -->
 </body>
 </html>
