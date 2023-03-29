@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
-    <head th:replace="fragments/head.html :: head('Sign Up')"></head>
+    <head th:replace="~{fragments/head.html :: head('Sign Up')}"></head>
     <body>
         
         <!-- Navigation -->
-        <nav th:replace="fragments/head.html :: navigation"></nav>
+        <nav th:replace="~{fragments/head.html :: navigation}"></nav>
         <!-- end of navigation -->
 
 
@@ -27,7 +27,7 @@
                 <div class="row">
                     <div class="col-xl-6 offset-xl-3">
                         <div class="text-box mt-5 mb-5">
-                            <p class="mb-4">Fill out the form below to sign up for the service. Already signed up? Then just <a class="blue" href="log-in.html">Log In</a></p>
+                            <p class="mb-4">Fill out the form below to sign up for the service. Already signed up? Then just <a class="blue" href="log-in.html" th:href="@{/login}">Log In</a></p>
                             <div th:if="${param.success}">
                                 <div class="alert alert-info">
                                     You have successfully registered our app!
@@ -78,7 +78,7 @@
 
 
         <!-- Footer -->
-        <div th:replace="fragments/head.html :: footer" class="footer"></div> <!-- end of footer -->
+        <div th:replace="~{fragments/head.html :: footer}" class="footer"></div> <!-- end of footer -->
         <!-- end of footer -->
     </body>
 </html>
