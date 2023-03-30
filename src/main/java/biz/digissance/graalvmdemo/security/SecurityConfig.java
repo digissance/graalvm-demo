@@ -6,24 +6,33 @@ import biz.digissance.graalvmdemo.jpa.party.PartyMapper;
 import biz.digissance.graalvmdemo.jpa.party.authentication.JpaPartyAuthenticationRepository;
 import java.io.Serializable;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.concurrent.ConcurrentMapCacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.access.PermissionEvaluator;
 import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;
 import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
 import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.CachingUserDetailsService;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserCache;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.cache.SpringCacheBasedUserCache;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.rememberme.InMemoryTokenRepositoryImpl;
 
+//@EnableCaching
 @EnableWebSecurity
 @EnableMethodSecurity
 @Configuration(proxyBeanMethods = false)
@@ -46,11 +55,35 @@ public class SecurityConfig {
     }
 
     @Bean
+    public CacheManager cacheManager() {
+        return new ConcurrentMapCacheManager();
+    }
+
+    @Bean
+    public UserCache userCache(CacheManager cacheManager) throws Exception {
+
+        Cache cache = (Cache) cacheManager.getCache("userCache");
+        return new SpringCacheBasedUserCache(cache);
+    }
+
+    @Bean
+    public UserDetailsService userDetailsService(final JpaPartyAuthenticationRepository authRepository,
+                                                 final EmailPasswordPartyAuthenticationRepository repository,
+                                                 final UserCache userCache) {
+        final var cachingUserDetailsService =
+                new CachingUserDetailsService(new EmailPasswordUserDetailsService(authRepository, repository));
+        cachingUserDetailsService.setUserCache(userCache);
+        return cachingUserDetailsService;
+    }
+
+    @Bean
     public AuthenticationProvider authenticationProvider(final UserDetailsService userDetailsService,
-                                                         final PasswordEncoder passwordEncoder) {
+                                                         final PasswordEncoder passwordEncoder,
+                                                         final UserCache userCache) {
         final var daoAuthenticationProvider = new DaoAuthenticationProvider();
         daoAuthenticationProvider.setPasswordEncoder(passwordEncoder);
         daoAuthenticationProvider.setUserDetailsService(userDetailsService);
+//        daoAuthenticationProvider.setUserCache(userCache);
         return daoAuthenticationProvider;
     }
 
@@ -58,15 +91,20 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(final HttpSecurity http,
                                                    final AuthenticationProvider daoAuthProvider,
                                                    final UserDetailsService userDetailsService) throws Exception {
+        http.getSharedObject(AuthenticationManagerBuilder.class).eraseCredentials(false);
         return http
+//                .authenticationManager(authManager)
                 .authenticationProvider(daoAuthProvider)
                 .authorizeHttpRequests(p -> {
-                    p.requestMatchers("/", "/login", "/register/**", "/error",
-                            "/actuator/**", "/css/**", "/images/**", "/js/**", "/webfonts/**").permitAll();
+                    p.requestMatchers(
+                            "/", "/login", "/register/**", "/error",
+                                    "/actuator/**", "/css/**", "/images/**", "/js/**", "/webfonts/**")
+                            .permitAll();
                     p.anyRequest().authenticated();
                 })
                 .csrf().disable()
                 .rememberMe(rem -> {
+//                    rem.tokenRepository(new InMemoryTokenRepositoryImpl());
                     rem.alwaysRemember(true);
                     rem.userDetailsService(userDetailsService);
                 })
@@ -77,7 +115,8 @@ public class SecurityConfig {
                                 .loginProcessingUrl("/login")
                                 .defaultSuccessUrl("/")
 //                                .permitAll()
-                ).sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                )
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 //                .anonymous(AbstractHttpConfigurer::disable)
                 .build();
     }
@@ -87,12 +126,6 @@ public class SecurityConfig {
             final JpaPartyAuthenticationRepository repository,
             final PartyMapper mapper) {
         return new DomainEmailPasswordPartyAuthenticationRepository(repository, mapper);
-    }
-
-    @Bean
-    public UserDetailsService userDetailsService(final JpaPartyAuthenticationRepository authRepository,
-                                                 final EmailPasswordPartyAuthenticationRepository repository) {
-        return new EmailPasswordUserDetailsService(authRepository, repository);
     }
 
     @Bean

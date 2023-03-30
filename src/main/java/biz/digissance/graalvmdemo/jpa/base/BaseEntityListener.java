@@ -9,6 +9,8 @@ import jakarta.persistence.PostUpdate;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreRemove;
 import jakarta.persistence.PreUpdate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Configurable;
@@ -27,6 +29,7 @@ public class BaseEntityListener {
         } else {
             log.info("[ENTITY AUDIT] About to update entity: " + baseEntity);
         }
+        handler.getPublisher().publishEvent(new EntityCreated(baseEntity));
     }
 
     @PreRemove
