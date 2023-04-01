@@ -7,20 +7,22 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
-public class EmailPasswordUserDetailsService implements UserDetailsService {
+public class AllPurposeUserDetailsService implements UserDetailsService {
 
     private final PartyAuthenticationRepository repository;
+    private final String key;
 
-    public EmailPasswordUserDetailsService(final PartyAuthenticationRepository repository) {
+    public AllPurposeUserDetailsService(final PartyAuthenticationRepository repository, final String key) {
         this.repository = repository;
+        this.key = key;
     }
 
     @Override
     public UserDetails loadUserByUsername(final String username) throws UsernameNotFoundException {
-        final var entry = repository.findPasswordAuthByUsername(username)
+        final var entry = repository.findAuthByUsername(username).stream().findFirst()
                 .orElseThrow(() -> new UsernameNotFoundException(username));
         return User.withUsername(username)
-                .password(entry.getPassword())
+                .password(key)
                 .authorities(entry.getRoles().stream()
                         .map(PartyRole::getName)
                         .map("ROLE_"::concat)

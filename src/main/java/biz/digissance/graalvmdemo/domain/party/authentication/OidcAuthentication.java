@@ -5,16 +5,15 @@ import lombok.NonNull;
 import lombok.ToString;
 import lombok.Value;
 import lombok.experimental.SuperBuilder;
-import net.liccioni.archetypes.party.Party;
 import net.liccioni.archetypes.party.PartyAuthentication;
 
 @Value
 @SuperBuilder(toBuilder = true)
-@EqualsAndHashCode(callSuper = true)
-public class EmailPasswordAuthentication extends PartyAuthentication {
+@EqualsAndHashCode(callSuper = false)
+public class OidcAuthentication extends PartyAuthentication {
 
     @NonNull
-    String emailAddress;
-    @ToString.Exclude
-    String password;
+    String username;
+    @NonNull
+    String provider;
 }

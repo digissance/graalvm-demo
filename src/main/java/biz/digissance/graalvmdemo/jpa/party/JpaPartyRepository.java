@@ -1,12 +1,21 @@
 package biz.digissance.graalvmdemo.jpa.party;
 
+import biz.digissance.graalvmdemo.jpa.party.person.JpaPerson;
+import java.util.Optional;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 public interface JpaPartyRepository extends JpaRepository<JpaParty, PartyPK> {
 
-//    @Query("select auth.party from JpaEmailPasswordPartyAuthentication auth " +
-//            "inner join fetch auth.party party " +
-//            "inner join fetch party.roles role " +
-//            "inner join fetch role.type where auth.emailAddress = ?1")
-//    Optional<JpaParty> findByEmailAddress(String emailAddress);
+    @EntityGraph(value = "Party.attributes")
+    Optional<JpaParty> findByIdentifier(String identifier);
+
+    @Query("select p from JpaParty p " +
+            "inner join fetch p.authentications auth " +
+            "inner join fetch p.addressProperties ap " +
+            "inner join fetch ap.address address " +
+            "inner join fetch p.roles role " +
+            "inner join fetch role.type where auth.username = ?1")
+    Optional<JpaParty> findPartyByUsername(String username);
 }

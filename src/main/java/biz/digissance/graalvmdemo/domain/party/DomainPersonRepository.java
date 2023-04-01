@@ -2,12 +2,15 @@ package biz.digissance.graalvmdemo.domain.party;
 
 import biz.digissance.graalvmdemo.jpa.party.JpaPartyRepository;
 import biz.digissance.graalvmdemo.jpa.party.PartyMapper;
+import biz.digissance.graalvmdemo.jpa.party.authentication.JpaPartyAuthenticationRepository;
 import biz.digissance.graalvmdemo.jpa.party.person.JpaPerson;
 import biz.digissance.graalvmdemo.jpa.party.person.JpaPersonRepository;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import net.liccioni.archetypes.party.Party;
 import net.liccioni.archetypes.party.Person;
+import net.liccioni.archetypes.uniqueid.UniqueIdentifier;
 
 public class DomainPersonRepository implements PersonRepository {
     private final JpaPersonRepository repository;
@@ -23,19 +26,22 @@ public class DomainPersonRepository implements PersonRepository {
     }
 
     @Override
-    public Person create(final Person person) {
+    public Party save(final Party person) {
 
-        final var jpaPerson = mapper.toPartyJpa(person);
+        final var jpaPerson = Optional.ofNullable(person.getIdentifier())
+                .map(UniqueIdentifier::getId)
+                .flatMap(partyRepository::findByIdentifier)
+                .map(p-> mapper.toPartyJpaForUpdate(person, p, p)).orElseGet(()->mapper.toPartyJpa(person));
         final var savedJpa = partyRepository.save(jpaPerson);
-        return (Person) mapper.toPartyDomain(savedJpa);
+        return mapper.toPartyDomain(savedJpa);
     }
 
-    @Override
+    /*@Override
     public Person update(final Person person) {
         final var jpaPerson = repository.findByIdentifier(person.getIdentifier().getId()).orElseThrow();
         mapper.toPartyJpaForUpdate(person, jpaPerson, jpaPerson);
         return (Person) mapper.toPartyDomain(partyRepository.save(jpaPerson));
-    }
+    }*/
 
     @Override
     public List<Person> findAll() {
@@ -50,6 +56,11 @@ public class DomainPersonRepository implements PersonRepository {
         return repository.findByIdentifier(identifier).map((JpaPerson personDto) -> {
             return (Person) mapper.toPartyDomain(personDto);
         });
+    }
+
+    @Override
+    public Optional<Party> findByAuthenticationUserName(final String username) {
+        return partyRepository.findPartyByUsername(username).map(mapper::toPartyDomain);
     }
 
     /*@Override

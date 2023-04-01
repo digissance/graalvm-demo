@@ -6,6 +6,7 @@ import biz.digissance.graalvmdemo.domain.party.PartyServiceImpl;
 import biz.digissance.graalvmdemo.domain.party.PersonRepository;
 import biz.digissance.graalvmdemo.jpa.party.JpaPartyRepository;
 import biz.digissance.graalvmdemo.jpa.party.PartyMapper;
+import biz.digissance.graalvmdemo.jpa.party.authentication.JpaPartyAuthenticationRepository;
 import biz.digissance.graalvmdemo.jpa.party.person.JpaPersonRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
