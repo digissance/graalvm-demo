@@ -1,12 +1,14 @@
 package biz.digissance.graalvmdemo.jpa.party;
 
 import biz.digissance.graalvmdemo.domain.party.authentication.EmailPasswordAuthentication;
+import biz.digissance.graalvmdemo.domain.party.authentication.OidcAuthentication;
 import biz.digissance.graalvmdemo.jpa.party.address.JpaAddressProperty;
 import biz.digissance.graalvmdemo.jpa.party.address.JpaAddressPropertyRepository;
 import biz.digissance.graalvmdemo.jpa.party.address.JpaAddressRepository;
 import biz.digissance.graalvmdemo.jpa.party.address.JpaEmailAddress;
 import biz.digissance.graalvmdemo.jpa.party.address.JpaGeographicAddress;
 import biz.digissance.graalvmdemo.jpa.party.authentication.JpaEmailPasswordPartyAuthentication;
+import biz.digissance.graalvmdemo.jpa.party.authentication.JpaOidcPartyAuthentication;
 import biz.digissance.graalvmdemo.jpa.party.authentication.JpaPartyAuthenticationRepository;
 import biz.digissance.graalvmdemo.jpa.party.person.JpaPersonRepository;
 import biz.digissance.graalvmdemo.jpa.party.role.JpaPartyRole;
@@ -53,20 +55,33 @@ public class JpaEntityFactory {
     }
 
     @ObjectFactory
-    JpaAddressProperty create(AddressProperties addressProperties, @Context JpaParty target) {
+    JpaAddressProperty create(AddressProperties addressProperties, @Context JpaParty context) {
         final var address = Optional.ofNullable(addressProperties)
                 .map(AddressProperties::getAddress).map(Address::getAddress).orElse("");
-        return Optional.ofNullable(target)
+        final var jpaAddressProperty = Optional.ofNullable(context)
                 .flatMap(p -> p.getAddressProperties().stream()
                         .filter(q -> address.equals(q.getAddress().getAddress()))
                         .findFirst())
                 .orElseGet(JpaAddressProperty::new);
+        jpaAddressProperty.setParty(context);
+        return jpaAddressProperty;
     }
 
     @ObjectFactory
-    JpaEmailPasswordPartyAuthentication create(EmailPasswordAuthentication authentication, @Context JpaParty target) {
-        return authRepository.findByEmailAddress(authentication.getEmailAddress())
-                .orElseGet(JpaEmailPasswordPartyAuthentication::new);
+    JpaEmailPasswordPartyAuthentication create(EmailPasswordAuthentication authentication, @Context JpaParty context) {
+        final var jpaEmailPasswordPartyAuthentication =
+                authRepository.findPasswordAuthByUsername(authentication.getEmailAddress())
+                        .orElseGet(JpaEmailPasswordPartyAuthentication::new);
+        jpaEmailPasswordPartyAuthentication.setParty(context);
+        return jpaEmailPasswordPartyAuthentication;
+    }
+
+    @ObjectFactory
+    JpaOidcPartyAuthentication create(OidcAuthentication authentication, @Context JpaParty context) {
+        final var jpaOidcPartyAuthentication = authRepository.findOidcAuthByUsername(authentication.getUsername())
+                .orElseGet(JpaOidcPartyAuthentication::new);
+        jpaOidcPartyAuthentication.setParty(context);
+        return jpaOidcPartyAuthentication;
     }
 
     @ObjectFactory
@@ -88,9 +103,11 @@ public class JpaEntityFactory {
 
     @ObjectFactory
     JpaPartyRole create(PartyRole partyRole, @Context JpaParty context) {
-        return Optional.ofNullable(partyRole.getIdentifier())
+        final var jpaPartyRole = Optional.ofNullable(partyRole.getIdentifier())
                 .map(UniqueIdentifier::getId)
                 .flatMap(roleRepository::findByIdentifier)
                 .orElseGet(JpaPartyRole::new);
+        jpaPartyRole.setParty(context);
+        return jpaPartyRole;
     }
 }

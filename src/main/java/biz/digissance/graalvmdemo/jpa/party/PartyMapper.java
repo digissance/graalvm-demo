@@ -1,14 +1,18 @@
 package biz.digissance.graalvmdemo.jpa.party;
 
 import biz.digissance.graalvmdemo.domain.party.authentication.EmailPasswordAuthentication;
+import biz.digissance.graalvmdemo.domain.party.authentication.OidcAuthentication;
+import biz.digissance.graalvmdemo.http.OidcRegisterRequest;
 import biz.digissance.graalvmdemo.http.RegisterRequest;
 import biz.digissance.graalvmdemo.jpa.DateTimeMapper;
 import biz.digissance.graalvmdemo.jpa.base.BaseEntity;
 import biz.digissance.graalvmdemo.jpa.base.LazyLoadingAwareMapper;
 import biz.digissance.graalvmdemo.jpa.party.address.JpaAddress;
+import biz.digissance.graalvmdemo.jpa.party.address.JpaAddressProperty;
 import biz.digissance.graalvmdemo.jpa.party.address.JpaEmailAddress;
 import biz.digissance.graalvmdemo.jpa.party.address.JpaGeographicAddress;
 import biz.digissance.graalvmdemo.jpa.party.authentication.JpaEmailPasswordPartyAuthentication;
+import biz.digissance.graalvmdemo.jpa.party.authentication.JpaOidcPartyAuthentication;
 import biz.digissance.graalvmdemo.jpa.party.authentication.JpaPartyAuthentication;
 import biz.digissance.graalvmdemo.jpa.party.organization.JpaOrganization;
 import biz.digissance.graalvmdemo.jpa.party.person.JpaPerson;
@@ -33,6 +37,7 @@ import net.liccioni.archetypes.relationship.PartyRoleIdentifier;
 import net.liccioni.archetypes.relationship.PartyRoleType;
 import net.liccioni.archetypes.uniqueid.UniqueIdentifier;
 import org.mapstruct.AfterMapping;
+import org.mapstruct.BeforeMapping;
 import org.mapstruct.CollectionMappingStrategy;
 import org.mapstruct.Condition;
 import org.mapstruct.Context;
@@ -54,42 +59,75 @@ public abstract class PartyMapper implements LazyLoadingAwareMapper {
 
     @SubclassMapping(target = JpaPerson.class, source = Person.class)
     @SubclassMapping(target = JpaOrganization.class, source = Organization.class)
-    public abstract JpaParty toPartyJpa(final Party party);
-
-
-    @Mapping(target = "authentications", qualifiedBy = WithPartyContext.class)
-    public abstract void toPartyJpaForUpdate(final Person person,
-                                             final @MappingTarget JpaPerson jpaPerson,
-                                             final @Context JpaParty context);
+    public abstract JpaParty toPartyJpa(final Party source);
 
     @Mapping(target = "authentications", qualifiedBy = WithPartyContext.class)
-    public abstract void toPartyJpaForUpdate(final Organization organization,
-                                             final @MappingTarget JpaOrganization jpaOrganization,
-                                             final @Context JpaParty context);
+    public JpaParty toPartyJpaForUpdate(final Party source,
+                                        final @MappingTarget JpaParty target,
+                                        final @Context JpaParty context) {
+        if (source == null) {
+            return null;
+        }
+        if (source instanceof Person) {
+            toPersonJpaForUpdate((Person) source, (JpaPerson) target, context);
+            return target;
+        } else if (source instanceof Organization) {
+            toOrganizationJpaForUpdate((Organization) source, (JpaOrganization) target, context);
+            return target;
+        } else {
+            throw new IllegalArgumentException(
+                    "Not all subclasses are supported for this mapping. Missing for " + source.getClass());
+        }
+    }
+
+    @Mapping(target = "authentications", qualifiedBy = WithPartyContext.class)
+    public abstract void toPersonJpaForUpdate(final Person source,
+                                              final @MappingTarget JpaPerson target,
+                                              final @Context JpaParty context);
+
+    @Mapping(target = "authentications", qualifiedBy = WithPartyContext.class)
+    public abstract void toOrganizationJpaForUpdate(final Organization source,
+                                                    final @MappingTarget JpaOrganization target,
+                                                    final @Context JpaParty context);
 
     @SubclassMapping(target = JpaEmailAddress.class, source = EmailAddress.class)
     @SubclassMapping(target = JpaGeographicAddress.class, source = GeographicAddress.class)
-    public abstract JpaAddress toAddressJpa(final Address address);
+    public abstract JpaAddress toAddressJpa(final Address source);
 
     @SubclassMapping(target = JpaEmailPasswordPartyAuthentication.class, source = EmailPasswordAuthentication.class)
-    public abstract JpaPartyAuthentication toAuthJpa(final PartyAuthentication authentication);
+    @SubclassMapping(target = JpaOidcPartyAuthentication.class, source = OidcAuthentication.class)
+    public abstract JpaPartyAuthentication toAuthJpa(final PartyAuthentication source);
+
+    @AfterMapping
+    public void setUserName(final EmailPasswordAuthentication source,
+                            final @MappingTarget JpaEmailPasswordPartyAuthentication target) {
+        target.setUsername(source.getEmailAddress());
+    }
+
+    @AfterMapping
+    public void setUserName(final JpaEmailPasswordPartyAuthentication source,
+                            final @MappingTarget
+                                    EmailPasswordAuthentication.EmailPasswordAuthenticationBuilder<?, ?> target) {
+        target.emailAddress(source.getUsername());
+    }
 
     @WithPartyContext
     @SubclassMapping(target = JpaEmailPasswordPartyAuthentication.class, source = EmailPasswordAuthentication.class)
-    public abstract JpaPartyAuthentication toAuthJpaWithContext(final PartyAuthentication authentication,
-                                                                final @Context JpaParty jpaParty);
+    @SubclassMapping(target = JpaOidcPartyAuthentication.class, source = OidcAuthentication.class)
+    public abstract JpaPartyAuthentication toAuthJpaWithContext(final PartyAuthentication source,
+                                                                final @Context JpaParty context);
 
     @InheritInverseConfiguration(name = "toPartyJpa")
-    public abstract Party toPartyDomain(final JpaParty jpaParty);
+    public abstract Party toPartyDomain(final JpaParty source);
 
     @InheritInverseConfiguration(name = "toAuthJpa")
-    public abstract PartyAuthentication toAuthDomain(final JpaPartyAuthentication jpaPartyAuthentication);
+    public abstract PartyAuthentication toAuthDomain(final JpaPartyAuthentication source);
 
     @InheritInverseConfiguration(name = "toAddressJpa")
-    public abstract Address toAddressDomain(final JpaAddress jpaAddress);
+    public abstract Address toAddressDomain(final JpaAddress source);
 
     @Mapping(target = "party", ignore = true)
-    public abstract PartyRole toPartyRoleDomain(final JpaPartyRole jpaPartyRole);
+    public abstract PartyRole toPartyRoleDomain(final JpaPartyRole source);
 
     public String toJpaCountry(Locale country) {
         return country.getIdentifier();
@@ -127,7 +165,7 @@ public abstract class PartyMapper implements LazyLoadingAwareMapper {
     }
 
     @AfterMapping
-    public void setParty(Party party, @MappingTarget JpaParty target) {
+    public void setParty(final Party source, final @MappingTarget JpaParty target) {
         target.getAddressProperties().forEach(p -> p.setParty(target));
         target.getAuthentications().forEach(p -> p.setParty(target));
         target.getRoles().forEach(p -> p.setParty(target));
@@ -146,9 +184,27 @@ public abstract class PartyMapper implements LazyLoadingAwareMapper {
                         .use(Set.of("authentication"))
                         .address(emailAddress)
                         .build()))
-                .authentications(Set.of(EmailPasswordAuthentication.builder()
-                        .emailAddress(emailAddress.getEmailAddress())
-                        .password(password)
+                .roles(Set.of(PartyRole.builder()
+                        .type(PartyRoleType.builder()
+                                .name("USER")
+                                .description("Basic user")
+                                .build())
+                        .build()))
+                .build();
+    }
+
+    public Person toPersonDomain(final OidcRegisterRequest registerRequest) {
+        final EmailAddress emailAddress = EmailAddress.builder()
+                .emailAddress(registerRequest.getEmail())
+                .build();
+        return Person.builder()
+                .personName(PersonName.builder()
+                        .givenName(registerRequest.getFirstName())
+                        .familyName(registerRequest.getLastName())
+                        .build())
+                .addressProperties(Set.of(AddressProperties.builder()
+                        .use(Set.of("authentication"))
+                        .address(emailAddress)
                         .build()))
                 .roles(Set.of(PartyRole.builder()
                         .type(PartyRoleType.builder()

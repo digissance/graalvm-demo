@@ -2,6 +2,7 @@ package biz.digissance.graalvmdemo.jpa.party.authentication;
 
 import biz.digissance.graalvmdemo.jpa.base.BaseEntity;
 import biz.digissance.graalvmdemo.jpa.party.JpaParty;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
@@ -16,6 +17,9 @@ import lombok.ToString;
 @ToString
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 public abstract class JpaPartyAuthentication extends BaseEntity {
+
+    @Column(unique = true, nullable = false)
+    private String username;
 
     @ManyToOne(optional = false)
     private JpaParty party;

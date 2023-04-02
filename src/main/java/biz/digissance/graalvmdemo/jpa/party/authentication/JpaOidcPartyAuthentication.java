@@ -10,9 +10,9 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
-public class JpaEmailPasswordPartyAuthentication extends JpaPartyAuthentication {
+public class JpaOidcPartyAuthentication extends JpaPartyAuthentication {
 
     @Column(nullable = false)
     @ToString.Exclude
-    private String password;
+    private String provider;
 }

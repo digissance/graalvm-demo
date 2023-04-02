@@ -1,9 +1,12 @@
 package biz.digissance.graalvmdemo.security;
 
-import biz.digissance.graalvmdemo.domain.party.authentication.DomainEmailPasswordPartyAuthenticationRepository;
-import biz.digissance.graalvmdemo.domain.party.authentication.EmailPasswordPartyAuthenticationRepository;
+import biz.digissance.graalvmdemo.domain.party.PartyService;
+import biz.digissance.graalvmdemo.domain.party.authentication.DomainPartyAuthenticationRepository;
+import biz.digissance.graalvmdemo.domain.party.authentication.PartyAuthenticationRepository;
+import biz.digissance.graalvmdemo.http.OidcRegisterRequest;
 import biz.digissance.graalvmdemo.jpa.party.PartyMapper;
 import biz.digissance.graalvmdemo.jpa.party.authentication.JpaPartyAuthenticationRepository;
+import biz.digissance.graalvmdemo.jpa.session.SessionRepository;
 import java.io.Serializable;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.Cache;
@@ -29,8 +32,12 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.cache.SpringCacheBasedUserCache;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
+import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
+import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
+import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.rememberme.InMemoryTokenRepositoryImpl;
 
 //@EnableCaching
 @EnableWebSecurity
@@ -67,11 +74,10 @@ public class SecurityConfig {
     }
 
     @Bean
-    public UserDetailsService userDetailsService(final JpaPartyAuthenticationRepository authRepository,
-                                                 final EmailPasswordPartyAuthenticationRepository repository,
+    public UserDetailsService userDetailsService(final PartyAuthenticationRepository repository,
                                                  final UserCache userCache) {
         final var cachingUserDetailsService =
-                new CachingUserDetailsService(new EmailPasswordUserDetailsService(authRepository, repository));
+                new CachingUserDetailsService(new EmailPasswordUserDetailsService(repository));
         cachingUserDetailsService.setUserCache(userCache);
         return cachingUserDetailsService;
     }
@@ -83,32 +89,38 @@ public class SecurityConfig {
         final var daoAuthenticationProvider = new DaoAuthenticationProvider();
         daoAuthenticationProvider.setPasswordEncoder(passwordEncoder);
         daoAuthenticationProvider.setUserDetailsService(userDetailsService);
-//        daoAuthenticationProvider.setUserCache(userCache);
         return daoAuthenticationProvider;
     }
 
     @Bean
     public SecurityFilterChain securityFilterChain(final HttpSecurity http,
                                                    final AuthenticationProvider daoAuthProvider,
-                                                   final UserDetailsService userDetailsService) throws Exception {
+                                                   final UserDetailsService userDetailsService,
+                                                   final PartyService partyService,
+                                                   final DelegatingPersistentTokenRepository persistentTokenRepository,
+                                                   final PartyAuthenticationRepository partyAuthRepository,
+                                                   final CacheManager cacheManager)
+            throws Exception {
         http.getSharedObject(AuthenticationManagerBuilder.class).eraseCredentials(false);
         return http
-//                .authenticationManager(authManager)
                 .authenticationProvider(daoAuthProvider)
                 .authorizeHttpRequests(p -> {
                     p.requestMatchers(
-                            "/", "/login", "/register/**", "/error",
-                                    "/actuator/**", "/css/**", "/images/**", "/js/**", "/webfonts/**")
-                            .permitAll();
+                            "/", "/login", "/register/**", "/error", "/oauth2/**",
+                            "/actuator/**", "/css/**", "/images/**", "/js/**", "/webfonts/**").permitAll();
                     p.anyRequest().authenticated();
                 })
                 .csrf().disable()
                 .rememberMe(rem -> {
-//                    rem.tokenRepository(new InMemoryTokenRepositoryImpl());
+                    final var cache = cacheManager.getCache("rememberMeUserCache");
+                    final var allPurposeService = new CachingUserDetailsService(new AllPurposeUserDetailsService(partyAuthRepository,"mykey"));
+                    allPurposeService.setUserCache(new SpringCacheBasedUserCache(cache));
+                    final var myRememberMeServices = new MyRememberMeServices("mykey", allPurposeService);
+                    myRememberMeServices.setAlwaysRemember(true);
                     rem.alwaysRemember(true);
-                    rem.userDetailsService(userDetailsService);
+                    rem.rememberMeServices(myRememberMeServices);
+                    rem.userDetailsService(allPurposeService);
                 })
-//                .headers().frameOptions().disable().and()
                 .formLogin(
                         form -> form
                                 .loginPage("/login")
@@ -117,15 +129,34 @@ public class SecurityConfig {
 //                                .permitAll()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-//                .anonymous(AbstractHttpConfigurer::disable)
+                .oauth2Login(p -> {
+                    p.loginPage("/login");
+                    p.userInfoEndpoint(j -> {
+                        final var oidcUserService = new OidcUserService();
+                        j.oidcUserService(new OAuth2UserService<OidcUserRequest, OidcUser>() {
+                            @Override
+                            public OidcUser loadUser(final OidcUserRequest userRequest)
+                                    throws OAuth2AuthenticationException {
+                                final var oidcUser = oidcUserService.loadUser(userRequest);
+                                partyService.register(OidcRegisterRequest.builder()
+                                        .email(oidcUser.getEmail())
+                                        .firstName(oidcUser.getGivenName())
+                                        .lastName(oidcUser.getFamilyName())
+                                        .provider(userRequest.getClientRegistration().getClientName())
+                                        .build());
+                                return oidcUser;
+                            }
+                        });
+                    });
+                })
                 .build();
     }
 
     @Bean
-    public EmailPasswordPartyAuthenticationRepository emailPasswordPartyAuthenticationRepository(
+    public PartyAuthenticationRepository emailPasswordPartyAuthenticationRepository(
             final JpaPartyAuthenticationRepository repository,
             final PartyMapper mapper) {
-        return new DomainEmailPasswordPartyAuthenticationRepository(repository, mapper);
+        return new DomainPartyAuthenticationRepository(repository, mapper);
     }
 
     @Bean
@@ -146,5 +177,10 @@ public class SecurityConfig {
             }
         });
         return defaultMethodSecurityExpressionHandler;
+    }
+
+    @Bean
+    public DelegatingPersistentTokenRepository delegatingPersistentTokenRepository(final SessionRepository repository) {
+        return new DelegatingPersistentTokenRepository(new SessionServiceImpl(repository));
     }
 }
