@@ -2,4 +2,4 @@ deploy:
   - name: Deploy PostgreSQL
     command: helm upgrade --install --version 6.3.12 postgresql okteto/postgresql --set postgresqlUsername=${POSTGRES_USERNAME} --set postgresqlPassword=${POSTGRES_PASSWORD} --set postgresqlDatabase=${POSTGRES_DB_NAME} --set persistence.size=2Gi
   - name: Deploy App
-    command: helm upgrade --install graalvm-demo chart --set image.tag=${APP_VERSION} --set app.database.url=jdbc:postgresql://postgresql:5432/${POSTGRES_DB_NAME} --set app.database.username=${POSTGRES_USERNAME} --set app.database.password=${POSTGRES_PASSWORD} --set app.spring.profile=${SPRING_PROFILE}
+    command: helm upgrade --install graalvm-demo chart --set image.tag=${APP_VERSION} --set app.database.url=jdbc:postgresql://postgresql:5432/${POSTGRES_DB_NAME} --set app.database.username=${POSTGRES_USERNAME} --set app.database.password=${POSTGRES_PASSWORD} --set app.spring.profile=${SPRING_PROFILE} --set app.oauth.google.client_id=${GOOGLE_OAUTH_CLIENT_ID} --set app.oauth.google.client_secret=${GOOGLE_OAUTH_CLIENT_SECRET}
