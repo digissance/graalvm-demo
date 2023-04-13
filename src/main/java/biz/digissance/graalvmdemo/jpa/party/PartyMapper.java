@@ -37,7 +37,6 @@ import net.liccioni.archetypes.relationship.PartyRoleIdentifier;
 import net.liccioni.archetypes.relationship.PartyRoleType;
 import net.liccioni.archetypes.uniqueid.UniqueIdentifier;
 import org.mapstruct.AfterMapping;
-import org.mapstruct.BeforeMapping;
 import org.mapstruct.CollectionMappingStrategy;
 import org.mapstruct.Condition;
 import org.mapstruct.Context;
@@ -81,18 +80,30 @@ public abstract class PartyMapper implements LazyLoadingAwareMapper {
     }
 
     @Mapping(target = "authentications", qualifiedBy = WithPartyContext.class)
+    @Mapping(target = "addressProperties", qualifiedBy = WithPartyContext.class)
     public abstract void toPersonJpaForUpdate(final Person source,
                                               final @MappingTarget JpaPerson target,
                                               final @Context JpaParty context);
 
     @Mapping(target = "authentications", qualifiedBy = WithPartyContext.class)
+    @Mapping(target = "addressProperties", qualifiedBy = WithPartyContext.class)
     public abstract void toOrganizationJpaForUpdate(final Organization source,
                                                     final @MappingTarget JpaOrganization target,
                                                     final @Context JpaParty context);
 
+    @WithPartyContext
+    @Mapping(target = "address", qualifiedBy = WithPartyContext.class)
+    public abstract JpaAddressProperty toAddressPropertyJpaWithContext(final AddressProperties source,
+                                                                       final @Context JpaParty context);
+
     @SubclassMapping(target = JpaEmailAddress.class, source = EmailAddress.class)
     @SubclassMapping(target = JpaGeographicAddress.class, source = GeographicAddress.class)
     public abstract JpaAddress toAddressJpa(final Address source);
+
+    @WithPartyContext
+    @SubclassMapping(target = JpaEmailAddress.class, source = EmailAddress.class)
+    @SubclassMapping(target = JpaGeographicAddress.class, source = GeographicAddress.class)
+    public abstract JpaAddress toAddressJpaWithContext(final Address source, final @Context JpaParty context);
 
     @SubclassMapping(target = JpaEmailPasswordPartyAuthentication.class, source = EmailPasswordAuthentication.class)
     @SubclassMapping(target = JpaOidcPartyAuthentication.class, source = OidcAuthentication.class)
