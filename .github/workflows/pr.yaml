@@ -49,15 +49,15 @@ jobs:
         with:
           arguments: build
 
-      - name: build image with jib
-        uses: gradle/gradle-build-action@v2
-        with:
-          arguments: jib
-
       - name: Retrieve version
         id: version
         run: |
           echo "APP_VERSION=$(./gradlew printVersion | grep sha | sed 's/Version://g')" >> $GITHUB_ENV
+
+      - name: build image with jib
+        uses: gradle/gradle-build-action@v2
+        with:
+          arguments: jib
 
       - name: Context
         uses: okteto/context@latest
