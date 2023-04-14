@@ -52,6 +52,7 @@ jobs:
       - name: Retrieve version
         id: version
         run: |
+          echo "GIT_HASH=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
           echo "APP_VERSION=$(./gradlew getCurrentVersion | grep -v -e '^$\|^>\|^BUILD')" >> $GITHUB_ENV
 
       - name: build image with jib
