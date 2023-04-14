@@ -62,7 +62,7 @@ public class SecurityConfig {
         return PasswordEncoderFactories.createDelegatingPasswordEncoder();
     }
 
-    @Bean
+    /*@Bean
     public CacheManager cacheManager() {
         return new ConcurrentMapCacheManager();
     }
@@ -72,21 +72,20 @@ public class SecurityConfig {
 
         Cache cache = (Cache) cacheManager.getCache("userCache");
         return new SpringCacheBasedUserCache(cache);
-    }
+    }*/
 
     @Bean
-    public UserDetailsService userDetailsService(final PartyAuthenticationRepository repository,
-                                                 final UserCache userCache) {
-        final var cachingUserDetailsService =
-                new CachingUserDetailsService(new EmailPasswordUserDetailsService(repository));
-        cachingUserDetailsService.setUserCache(userCache);
-        return cachingUserDetailsService;
+    public UserDetailsService userDetailsService(final PartyAuthenticationRepository repository) {
+//        final var cachingUserDetailsService =
+//                new CachingUserDetailsService(new EmailPasswordUserDetailsService(repository));
+//        cachingUserDetailsService.setUserCache(userCache);
+//        return cachingUserDetailsService;
+        return new EmailPasswordUserDetailsService(repository);
     }
 
     @Bean
     public AuthenticationProvider authenticationProvider(final UserDetailsService userDetailsService,
-                                                         final PasswordEncoder passwordEncoder,
-                                                         final CacheManager cacheManager) {
+                                                         final PasswordEncoder passwordEncoder) {
         final var daoAuthenticationProvider = new DaoAuthenticationProvider();
         daoAuthenticationProvider.setPasswordEncoder(passwordEncoder);
         daoAuthenticationProvider.setUserDetailsService(userDetailsService);
@@ -101,8 +100,7 @@ public class SecurityConfig {
                                                    final UserDetailsService userDetailsService,
                                                    final PartyService partyService,
                                                    final PersistentTokenRepository persistentTokenRepository,
-                                                   final PartyAuthenticationRepository partyAuthRepository,
-                                                   final CacheManager cacheManager)
+                                                   final PartyAuthenticationRepository partyAuthRepository)
             throws Exception {
 //        http.getSharedObject(AuthenticationManagerBuilder.class).eraseCredentials(false);
         return http
