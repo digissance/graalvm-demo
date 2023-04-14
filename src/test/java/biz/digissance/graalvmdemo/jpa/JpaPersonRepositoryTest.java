@@ -12,6 +12,8 @@ import biz.digissance.graalvmdemo.jpa.party.PartyMapper;
 import biz.digissance.graalvmdemo.jpa.party.address.JpaAddressRepository;
 import biz.digissance.graalvmdemo.jpa.party.authentication.JpaPartyAuthenticationRepository;
 import biz.digissance.graalvmdemo.jpa.party.person.JpaPersonRepository;
+import biz.digissance.graalvmdemo.jpa.party.role.JpaPartyRoleType;
+import biz.digissance.graalvmdemo.jpa.party.role.JpaPartyRoleTypeRepository;
 import jakarta.persistence.EntityManager;
 import java.util.List;
 import java.util.Set;
@@ -54,6 +56,8 @@ class JpaPersonRepositoryTest {
     private JpaPartyRepository jpaPartyRepository;
     @Autowired
     private JpaAddressRepository jpaAddressRepository;
+    @Autowired
+    private JpaPartyRoleTypeRepository partyRoleTypeRepository;
 
     @Autowired
     private JpaPartyAuthenticationRepository jpaAuthenticationRepository;
@@ -125,6 +129,7 @@ class JpaPersonRepositoryTest {
         assertThat(addressMapper).isNotNull();
         assertThat(jpaPartyRepository).isNotNull();
         assertThat(jpaAuthenticationRepository).isNotNull();
+        assertThat(partyRoleTypeRepository).isNotNull();
     }
 
     @Test
@@ -240,9 +245,15 @@ class JpaPersonRepositoryTest {
 
     @Test
     void shouldCreateRole() {
+        final var developer = new JpaPartyRoleType();
+        developer.setName("Developer");
+        developer.setDescription("Java Developer");
+        partyRoleTypeRepository.save(developer);
+        entityManager.flush();
         someGuy.getRoles()
                 .add(PartyRole.builder()
-                        .type(PartyRoleType.builder().name("Developer").description("Java Developer").build())
+                        .type(PartyRoleType.builder().name(developer.getName())
+                                .description(developer.getDescription()).build())
                         .build());
         final var created = personRepository.save(someGuy);
         assertThat(created).usingRecursiveComparison()
@@ -256,9 +267,15 @@ class JpaPersonRepositoryTest {
         someGuy.getAddressProperties().add(personalEmail);
         someGuy.getAddressProperties().add(homeAddress);
         someGuy.getAddressProperties().add(workAddress);
+        final var developer = new JpaPartyRoleType();
+        developer.setName("Developer");
+        developer.setDescription("Java Developer");
+        partyRoleTypeRepository.save(developer);
+        entityManager.flush();
         someGuy.getRoles()
                 .add(PartyRole.builder()
-                        .type(PartyRoleType.builder().name("Developer").description("Java Developer").build())
+                        .type(PartyRoleType.builder().name(developer.getName())
+                                .description(developer.getDescription()).build())
                         .build());
         someGuy.getAuthentications().add(EmailPasswordAuthentication.builder()
                 .emailAddress(personalEmail.getAddress().getAddress())
