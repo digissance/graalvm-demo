@@ -76,15 +76,27 @@ public class JpaEntityFactory {
                 .findFirst().orElseGet(JpaGeographicAddress::new);
     }
 
+//    @ObjectFactory
+//    public JpaPartyRoleType create(PartyRoleType partyRoleType, @Context JpaParty context) {
+//        return context.getRoles().stream()
+//                .map(JpaPartyRole::getType)
+//                .filter(type -> type.getName().equals(partyRoleType.getName()))
+//                .findFirst()
+//                .orElseGet(() -> partyRoleTypeRepository.findByName(partyRoleType.getName())
+//                        .orElseGet(JpaPartyRoleType::new));
+//    }
+
     @ObjectFactory
-    public JpaPartyRoleType create(PartyRoleType partyRoleType, @Context JpaParty context) {
-        return context.getRoles().stream()
-                .map(JpaPartyRole::getType)
-                .filter(type -> type.getName().equals(partyRoleType.getName()))
-                .findFirst()
-                .orElseGet(() -> partyRoleTypeRepository.findByName(partyRoleType.getName())
-                        .orElseGet(JpaPartyRoleType::new));
+    public JpaPartyRoleType create(PartyRoleType partyRoleType) {
+        return partyRoleTypeRepository.findByName(partyRoleType.getName())
+                .orElseGet(JpaPartyRoleType::new);
     }
+
+//    @ObjectFactory
+//    public <T extends BaseEntity> T resolve(PartyRoleType sourceDto, @TargetType Class<T> type) {
+//                return partyRoleTypeRepository.findByName(sourceDto.getName())
+//                .orElseGet(JpaPartyRoleType::new);
+//    }
 
     @ObjectFactory
     public JpaPartyRole create(PartyRole partyRole, @Context JpaParty context) {

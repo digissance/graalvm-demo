@@ -81,15 +81,21 @@ public abstract class PartyMapper implements LazyLoadingAwareMapper {
 
     @Mapping(target = "authentications", qualifiedBy = WithPartyContext.class)
     @Mapping(target = "addressProperties", qualifiedBy = WithPartyContext.class)
+//    @Mapping(target = "roles", qualifiedBy = WithPartyContext.class)
     public abstract void toPersonJpaForUpdate(final Person source,
                                               final @MappingTarget JpaPerson target,
                                               final @Context JpaParty context);
 
     @Mapping(target = "authentications", qualifiedBy = WithPartyContext.class)
     @Mapping(target = "addressProperties", qualifiedBy = WithPartyContext.class)
+//    @Mapping(target = "roles", qualifiedBy = WithPartyContext.class)
     public abstract void toOrganizationJpaForUpdate(final Organization source,
                                                     final @MappingTarget JpaOrganization target,
                                                     final @Context JpaParty context);
+
+//    @WithPartyContext
+//    public abstract JpaPartyRole toPartyRoleJpaWithContext(final PartyRole source,
+//                                                           final @Context JpaParty context);
 
     @WithPartyContext
     @Mapping(target = "address", qualifiedBy = WithPartyContext.class)

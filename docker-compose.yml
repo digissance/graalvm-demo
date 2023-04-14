@@ -9,7 +9,7 @@ services:
     ports:
       - "5432:5432"
   auth-server:
-    image: "ghcr.io/digissance/graalvm-demo:latest"
+    image: "ghcr.io/digissance/graalvm-demo:0.0.27-SNAPSHOT"
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://database:5432/graalvm-demo
       SPRING_DATASOURCE_USERNAME: graalvm-demo
