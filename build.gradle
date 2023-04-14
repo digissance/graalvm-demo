@@ -12,7 +12,6 @@ def publishToDocker = Boolean.parseBoolean(System.getenv().getOrDefault('PUBLISH
 def dockerUsername = System.getenv().getOrDefault('DOCKER_USERNAME', 'user')
 def dockerPassword = System.getenv().getOrDefault('DOCKER_PASSWORD', 'pass')
 def appVersion = System.getenv().getOrDefault('APP_VERSION', '0.0.1-SNAPSHOT')
-def gitHash = System.getenv().getOrDefault('GIT_HASH', 'f6fa249')
 
 group = 'biz.digissance'
 version = semver.version as String
@@ -79,7 +78,7 @@ bootBuildImage {
 jib {
     to {
         image = "ghcr.io/digissance/graalvm-demo"
-        tags = ["$appVersion-$gitHash"] as List<String>
+        tags = [appVersion] as List<String>
     }
 }
 
