@@ -6,8 +6,8 @@ import biz.digissance.graalvmdemo.domain.party.authentication.PartyAuthenticatio
 import biz.digissance.graalvmdemo.http.OidcRegisterRequest;
 import biz.digissance.graalvmdemo.jpa.party.PartyMapper;
 import biz.digissance.graalvmdemo.jpa.party.authentication.JpaPartyAuthenticationRepository;
-import biz.digissance.graalvmdemo.jpa.session.SessionRepository;
 import java.io.Serializable;
+import javax.sql.DataSource;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
@@ -20,7 +20,6 @@ import org.springframework.security.access.expression.method.MethodSecurityExpre
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.CachingUserDetailsService;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -38,6 +37,8 @@ import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
+import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
 
 //@EnableCaching
 @EnableWebSecurity
@@ -61,34 +62,35 @@ public class SecurityConfig {
         return PasswordEncoderFactories.createDelegatingPasswordEncoder();
     }
 
-    @Bean
+    /*@Bean
     public CacheManager cacheManager() {
         return new ConcurrentMapCacheManager();
     }
 
     @Bean
-    public UserCache userCache(CacheManager cacheManager) throws Exception {
+    public UserCache userCache(final CacheManager cacheManager) throws Exception {
 
         Cache cache = (Cache) cacheManager.getCache("userCache");
         return new SpringCacheBasedUserCache(cache);
-    }
+    }*/
 
     @Bean
-    public UserDetailsService userDetailsService(final PartyAuthenticationRepository repository,
-                                                 final UserCache userCache) {
-        final var cachingUserDetailsService =
-                new CachingUserDetailsService(new EmailPasswordUserDetailsService(repository));
-        cachingUserDetailsService.setUserCache(userCache);
-        return cachingUserDetailsService;
+    public UserDetailsService userDetailsService(final PartyAuthenticationRepository repository) {
+//        final var cachingUserDetailsService =
+//                new CachingUserDetailsService(new EmailPasswordUserDetailsService(repository));
+//        cachingUserDetailsService.setUserCache(userCache);
+//        return cachingUserDetailsService;
+        return new EmailPasswordUserDetailsService(repository);
     }
 
     @Bean
     public AuthenticationProvider authenticationProvider(final UserDetailsService userDetailsService,
-                                                         final PasswordEncoder passwordEncoder,
-                                                         final UserCache userCache) {
+                                                         final PasswordEncoder passwordEncoder) {
         final var daoAuthenticationProvider = new DaoAuthenticationProvider();
         daoAuthenticationProvider.setPasswordEncoder(passwordEncoder);
         daoAuthenticationProvider.setUserDetailsService(userDetailsService);
+//        daoAuthenticationProvider.setUserCache(
+//                new SpringCacheBasedUserCache(cacheManager.getCache("userDaoCache")));
         return daoAuthenticationProvider;
     }
 
@@ -97,12 +99,28 @@ public class SecurityConfig {
                                                    final AuthenticationProvider daoAuthProvider,
                                                    final UserDetailsService userDetailsService,
                                                    final PartyService partyService,
-                                                   final DelegatingPersistentTokenRepository persistentTokenRepository,
-                                                   final PartyAuthenticationRepository partyAuthRepository,
-                                                   final CacheManager cacheManager)
+                                                   final PersistentTokenRepository persistentTokenRepository,
+                                                   final PartyAuthenticationRepository partyAuthRepository)
             throws Exception {
-        http.getSharedObject(AuthenticationManagerBuilder.class).eraseCredentials(false);
+//        http.getSharedObject(AuthenticationManagerBuilder.class).eraseCredentials(false);
         return http
+                /*.securityContext(sec->sec.securityContextRepository(new SecurityContextRepository() {
+                    @Override
+                    public SecurityContext loadContext(final HttpRequestResponseHolder requestResponseHolder) {
+                        return null;
+                    }
+
+                    @Override
+                    public void saveContext(final SecurityContext context, final HttpServletRequest request,
+                                            final HttpServletResponse response) {
+
+                    }
+
+                    @Override
+                    public boolean containsContext(final HttpServletRequest request) {
+                        return false;
+                    }
+                }))*/
                 .authenticationProvider(daoAuthProvider)
                 .authorizeHttpRequests(p -> {
                     p.requestMatchers(
@@ -112,14 +130,17 @@ public class SecurityConfig {
                 })
                 .csrf().disable()
                 .rememberMe(rem -> {
-                    final var cache = cacheManager.getCache("rememberMeUserCache");
-                    final var allPurposeService = new CachingUserDetailsService(new AllPurposeUserDetailsService(partyAuthRepository,"mykey"));
+                    /*final var cache = cacheManager.getCache("rememberMeUserCache");
+                    final var allPurposeService = new CachingUserDetailsService(new AllPurposeUserDetailsService
+                    (partyAuthRepository,"mykey"));
                     allPurposeService.setUserCache(new SpringCacheBasedUserCache(cache));
-                    final var myRememberMeServices = new MyRememberMeServices("mykey", allPurposeService);
-                    myRememberMeServices.setAlwaysRemember(true);
+                    */
                     rem.alwaysRemember(true);
-                    rem.rememberMeServices(myRememberMeServices);
-                    rem.userDetailsService(allPurposeService);
+                    rem.tokenRepository(persistentTokenRepository);
+//                    final var myRememberMeServices = new MyRememberMeServices("notUsed", userDetailsService, persistentTokenRepository);
+//                    myRememberMeServices.setAlwaysRemember(true);
+//                    rem.rememberMeServices(myRememberMeServices);
+//                    rem.userDetailsService(allPurposeService);
                 })
                 .formLogin(
                         form -> form
@@ -128,7 +149,7 @@ public class SecurityConfig {
                                 .defaultSuccessUrl("/")
 //                                .permitAll()
                 )
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+//                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .oauth2Login(p -> {
                     p.loginPage("/login");
                     p.userInfoEndpoint(j -> {
@@ -180,7 +201,9 @@ public class SecurityConfig {
     }
 
     @Bean
-    public DelegatingPersistentTokenRepository delegatingPersistentTokenRepository(final SessionRepository repository) {
-        return new DelegatingPersistentTokenRepository(new SessionServiceImpl(repository));
+    public PersistentTokenRepository delegatingPersistentTokenRepository(final DataSource dataSource) {
+        final var jdbcTokenRepository = new JdbcTokenRepositoryImpl();
+        jdbcTokenRepository.setDataSource(dataSource);
+        return jdbcTokenRepository;
     }
 }

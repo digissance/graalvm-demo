@@ -3,26 +3,18 @@ package biz.digissance.graalvmdemo.jpa.party;
 import biz.digissance.graalvmdemo.domain.party.authentication.EmailPasswordAuthentication;
 import biz.digissance.graalvmdemo.domain.party.authentication.OidcAuthentication;
 import biz.digissance.graalvmdemo.jpa.party.address.JpaAddressProperty;
-import biz.digissance.graalvmdemo.jpa.party.address.JpaAddressPropertyRepository;
-import biz.digissance.graalvmdemo.jpa.party.address.JpaAddressRepository;
 import biz.digissance.graalvmdemo.jpa.party.address.JpaEmailAddress;
 import biz.digissance.graalvmdemo.jpa.party.address.JpaGeographicAddress;
 import biz.digissance.graalvmdemo.jpa.party.authentication.JpaEmailPasswordPartyAuthentication;
 import biz.digissance.graalvmdemo.jpa.party.authentication.JpaOidcPartyAuthentication;
-import biz.digissance.graalvmdemo.jpa.party.authentication.JpaPartyAuthenticationRepository;
-import biz.digissance.graalvmdemo.jpa.party.person.JpaPersonRepository;
 import biz.digissance.graalvmdemo.jpa.party.role.JpaPartyRole;
-import biz.digissance.graalvmdemo.jpa.party.role.JpaPartyRoleRepository;
 import biz.digissance.graalvmdemo.jpa.party.role.JpaPartyRoleType;
 import biz.digissance.graalvmdemo.jpa.party.role.JpaPartyRoleTypeRepository;
-import java.util.Optional;
-import net.liccioni.archetypes.address.Address;
 import net.liccioni.archetypes.address.AddressProperties;
 import net.liccioni.archetypes.address.EmailAddress;
 import net.liccioni.archetypes.address.GeographicAddress;
 import net.liccioni.archetypes.relationship.PartyRole;
 import net.liccioni.archetypes.relationship.PartyRoleType;
-import net.liccioni.archetypes.uniqueid.UniqueIdentifier;
 import org.mapstruct.Context;
 import org.mapstruct.ObjectFactory;
 import org.springframework.stereotype.Service;
@@ -30,84 +22,85 @@ import org.springframework.stereotype.Service;
 @Service
 public class JpaEntityFactory {
 
-    private final JpaPartyRoleTypeRepository roleTypeRepository;
-    private final JpaPersonRepository personRepository;
-    private final JpaAddressRepository addressRepository;
-    private final JpaAddressPropertyRepository addressPropertyRepository;
-    private final JpaPartyRoleRepository roleRepository;
-    private final JpaPartyAuthenticationRepository authRepository;
-    private final JpaPartyRepository partyRepository;
+    private final JpaPartyRoleTypeRepository partyRoleTypeRepository;
 
-    public JpaEntityFactory(final JpaPartyRoleTypeRepository roleTypeRepository,
-                            final JpaPersonRepository personRepository,
-                            final JpaAddressRepository addressRepository,
-                            final JpaAddressPropertyRepository addressPropertyRepository,
-                            final JpaPartyRoleRepository roleRepository,
-                            final JpaPartyAuthenticationRepository authRepository,
-                            final JpaPartyRepository partyRepository) {
-        this.roleTypeRepository = roleTypeRepository;
-        this.personRepository = personRepository;
-        this.addressRepository = addressRepository;
-        this.addressPropertyRepository = addressPropertyRepository;
-        this.roleRepository = roleRepository;
-        this.authRepository = authRepository;
-        this.partyRepository = partyRepository;
+    public JpaEntityFactory(
+            final JpaPartyRoleTypeRepository partyRoleTypeRepository) {
+        this.partyRoleTypeRepository = partyRoleTypeRepository;
     }
 
     @ObjectFactory
-    JpaAddressProperty create(AddressProperties addressProperties, @Context JpaParty context) {
-        final var address = Optional.ofNullable(addressProperties)
-                .map(AddressProperties::getAddress).map(Address::getAddress).orElse("");
-        final var jpaAddressProperty = Optional.ofNullable(context)
-                .flatMap(p -> p.getAddressProperties().stream()
-                        .filter(q -> address.equals(q.getAddress().getAddress()))
-                        .findFirst())
-                .orElseGet(JpaAddressProperty::new);
-        jpaAddressProperty.setParty(context);
-        return jpaAddressProperty;
+    public JpaAddressProperty create(AddressProperties addressProperties, @Context JpaParty context) {
+        return context.getAddressProperties().stream()
+                .filter(address -> address.getAddress().getAddress()
+                        .equals(addressProperties.getAddress().getAddress()))
+                .findFirst().orElseGet(JpaAddressProperty::new);
     }
 
     @ObjectFactory
-    JpaEmailPasswordPartyAuthentication create(EmailPasswordAuthentication authentication, @Context JpaParty context) {
-        final var jpaEmailPasswordPartyAuthentication =
-                authRepository.findPasswordAuthByUsername(authentication.getEmailAddress())
-                        .orElseGet(JpaEmailPasswordPartyAuthentication::new);
-        jpaEmailPasswordPartyAuthentication.setParty(context);
-        return jpaEmailPasswordPartyAuthentication;
+    public JpaEmailPasswordPartyAuthentication create(EmailPasswordAuthentication authentication,
+                                                      @Context JpaParty context) {
+        return context.getAuthentications().stream()
+                .filter(JpaEmailPasswordPartyAuthentication.class::isInstance)
+                .map(JpaEmailPasswordPartyAuthentication.class::cast)
+                .filter(auth -> auth.getUsername().equals(authentication.getEmailAddress()))
+                .findFirst().orElseGet(JpaEmailPasswordPartyAuthentication::new);
     }
 
     @ObjectFactory
-    JpaOidcPartyAuthentication create(OidcAuthentication authentication, @Context JpaParty context) {
-        final var jpaOidcPartyAuthentication = authRepository.findOidcAuthByUsername(authentication.getUsername())
-                .orElseGet(JpaOidcPartyAuthentication::new);
-        jpaOidcPartyAuthentication.setParty(context);
-        return jpaOidcPartyAuthentication;
+    public JpaOidcPartyAuthentication create(OidcAuthentication authentication, @Context JpaParty context) {
+        return context.getAuthentications().stream()
+                .filter(JpaOidcPartyAuthentication.class::isInstance)
+                .map(JpaOidcPartyAuthentication.class::cast)
+                .filter(auth -> auth.getUsername().equals(authentication.getUsername()))
+                .findFirst().orElseGet(JpaOidcPartyAuthentication::new);
     }
 
     @ObjectFactory
-    JpaEmailAddress create(EmailAddress emailAddress) {
-        return (JpaEmailAddress) addressRepository.findByAddress(emailAddress.getAddress())
-                .orElseGet(JpaEmailAddress::new);
+    public JpaEmailAddress create(EmailAddress emailAddress, @Context JpaParty context) {
+        return context.getAddressProperties().stream()
+                .map(JpaAddressProperty::getAddress)
+                .filter(JpaEmailAddress.class::isInstance)
+                .map(JpaEmailAddress.class::cast)
+                .filter(address -> address.getAddress().equals(emailAddress.getAddress()))
+                .findFirst().orElseGet(JpaEmailAddress::new);
     }
 
     @ObjectFactory
-    JpaGeographicAddress create(GeographicAddress geographicAddress) {
-        return (JpaGeographicAddress) addressRepository.findByAddress(geographicAddress.getAddress())
-                .orElseGet(JpaGeographicAddress::new);
+    public JpaGeographicAddress create(GeographicAddress geographicAddress, @Context JpaParty context) {
+        return context.getAddressProperties().stream()
+                .map(JpaAddressProperty::getAddress)
+                .filter(JpaGeographicAddress.class::isInstance)
+                .map(JpaGeographicAddress.class::cast)
+                .filter(address -> address.getAddress().equals(geographicAddress.getAddress()))
+                .findFirst().orElseGet(JpaGeographicAddress::new);
     }
 
-    @ObjectFactory
-    JpaPartyRoleType create(PartyRoleType partyRoleType) {
-        return roleTypeRepository.findByName(partyRoleType.getName()).orElseGet(JpaPartyRoleType::new);
-    }
+//    @ObjectFactory
+//    public JpaPartyRoleType create(PartyRoleType partyRoleType, @Context JpaParty context) {
+//        return context.getRoles().stream()
+//                .map(JpaPartyRole::getType)
+//                .filter(type -> type.getName().equals(partyRoleType.getName()))
+//                .findFirst()
+//                .orElseGet(() -> partyRoleTypeRepository.findByName(partyRoleType.getName())
+//                        .orElseGet(JpaPartyRoleType::new));
+//    }
 
     @ObjectFactory
-    JpaPartyRole create(PartyRole partyRole, @Context JpaParty context) {
-        final var jpaPartyRole = Optional.ofNullable(partyRole.getIdentifier())
-                .map(UniqueIdentifier::getId)
-                .flatMap(roleRepository::findByIdentifier)
-                .orElseGet(JpaPartyRole::new);
-        jpaPartyRole.setParty(context);
-        return jpaPartyRole;
+    public JpaPartyRoleType create(PartyRoleType partyRoleType) {
+        return partyRoleTypeRepository.findByName(partyRoleType.getName())
+                .orElseGet(JpaPartyRoleType::new);
+    }
+
+//    @ObjectFactory
+//    public <T extends BaseEntity> T resolve(PartyRoleType sourceDto, @TargetType Class<T> type) {
+//                return partyRoleTypeRepository.findByName(sourceDto.getName())
+//                .orElseGet(JpaPartyRoleType::new);
+//    }
+
+    @ObjectFactory
+    public JpaPartyRole create(PartyRole partyRole, @Context JpaParty context) {
+        return context.getRoles().stream().filter(p -> p.getIdentifier().equals(partyRole.getIdentifier().getId()))
+                .findFirst().orElseGet(JpaPartyRole::new);
     }
 }

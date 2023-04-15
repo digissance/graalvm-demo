@@ -25,10 +25,10 @@ public class JpaPartyRole extends BaseEntity {
     @Column(unique = true, nullable = false)
     private String identifier;
 
-    @ManyToOne(cascade = CascadeType.ALL, optional = false)
+    @ManyToOne(optional = false)
     private JpaParty party;
 
-    @ManyToOne(cascade = CascadeType.ALL, optional = false)
+    @ManyToOne(optional = false)
     private JpaPartyRoleType type;
 
     @PrePersist
