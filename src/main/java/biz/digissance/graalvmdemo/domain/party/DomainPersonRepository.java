@@ -2,7 +2,6 @@ package biz.digissance.graalvmdemo.domain.party;
 
 import biz.digissance.graalvmdemo.jpa.party.JpaPartyRepository;
 import biz.digissance.graalvmdemo.jpa.party.PartyMapper;
-import biz.digissance.graalvmdemo.jpa.party.authentication.JpaPartyAuthenticationRepository;
 import biz.digissance.graalvmdemo.jpa.party.person.JpaPerson;
 import biz.digissance.graalvmdemo.jpa.party.person.JpaPersonRepository;
 import java.util.List;
@@ -31,17 +30,10 @@ public class DomainPersonRepository implements PersonRepository {
         final var jpaPerson = Optional.ofNullable(person.getIdentifier())
                 .map(UniqueIdentifier::getId)
                 .flatMap(partyRepository::findByIdentifier)
-                .map(p-> mapper.toPartyJpaForUpdate(person, p, p)).orElseGet(()->mapper.toPartyJpa(person));
+                .map(p -> mapper.toPartyJpaForUpdate(person, p, p)).orElseGet(() -> mapper.toPartyJpa(person));
         final var savedJpa = partyRepository.save(jpaPerson);
         return mapper.toPartyDomain(savedJpa);
     }
-
-    /*@Override
-    public Person update(final Person person) {
-        final var jpaPerson = repository.findByIdentifier(person.getIdentifier().getId()).orElseThrow();
-        mapper.toPartyJpaForUpdate(person, jpaPerson, jpaPerson);
-        return (Person) mapper.toPartyDomain(partyRepository.save(jpaPerson));
-    }*/
 
     @Override
     public List<Person> findAll() {
@@ -61,18 +53,5 @@ public class DomainPersonRepository implements PersonRepository {
     @Override
     public Optional<Party> findByAuthenticationUserName(final String username) {
         return partyRepository.findPartyByUsername(username).map(mapper::toPartyDomain);
-    }
-
-    /*@Override
-    public Person removeAddress(final String id, final Predicate<AddressProperties> addressMatcher) {
-
-        final var jpaPerson = findByIdentifierOrThrowException(id);
-        jpaPerson.getAddressProperties().removeIf(p -> addressMatcher.test(mapper.toAddressProperty(p)));
-        return mapper.toPersonDomain(repository.save(jpaPerson));
-    }*/
-
-    private JpaPerson findByIdentifierOrThrowException(final String id) {
-        return repository.findByIdentifier(id)
-                .orElseThrow(() -> new IllegalArgumentException(String.format("Person with Id %s not found", id)));
     }
 }
