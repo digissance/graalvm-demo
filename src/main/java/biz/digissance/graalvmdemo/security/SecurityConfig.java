@@ -124,7 +124,7 @@ public class SecurityConfig {
                 .authenticationProvider(daoAuthProvider)
                 .authorizeHttpRequests(p -> {
                     p.requestMatchers(
-                            "/", "/login", "/register/**", "/error", "/oauth2/**",
+                            "/", "/login/**", "/register/**", "/error", "/oauth2/**",
                             "/actuator/**", "/css/**", "/images/**", "/js/**", "/webfonts/**").permitAll();
                     p.anyRequest().authenticated();
                 })
