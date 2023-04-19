@@ -39,9 +39,9 @@ public class MyOAuth2AuthorizationRequestAuthorizationRequestRepository
             final HttpServletResponse response) {
 
         Cookie cookie = new Cookie(OAUTH_COOKIE_NAME, serializeCookie(authorizationRequest));
-        cookie.setHttpOnly(true);
-        cookie.setSecure(true);
-        cookie.setMaxAge(60);
+//        cookie.setHttpOnly(true);
+//        cookie.setSecure(true);
+//        cookie.setMaxAge(60);
         cookie.setPath("/");
         response.addCookie(cookie);
     }
@@ -56,9 +56,9 @@ public class MyOAuth2AuthorizationRequestAuthorizationRequestRepository
     public OAuth2AuthorizationRequest removeAuthorizationRequest(
             final HttpServletRequest request, final HttpServletResponse response) {
         Cookie cookie = new Cookie(OAUTH_COOKIE_NAME, "");
-        cookie.setHttpOnly(true);
-        cookie.setSecure(true);
-        cookie.setMaxAge(0);
+//        cookie.setHttpOnly(true);
+//        cookie.setSecure(true);
+//        cookie.setMaxAge(0);
         cookie.setPath("/");
         response.addCookie(cookie);
         return Optional.ofNullable(request.getCookies())
