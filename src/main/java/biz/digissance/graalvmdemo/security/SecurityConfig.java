@@ -3,22 +3,19 @@ package biz.digissance.graalvmdemo.security;
 import biz.digissance.graalvmdemo.domain.party.PartyService;
 import biz.digissance.graalvmdemo.domain.party.authentication.DomainPartyAuthenticationRepository;
 import biz.digissance.graalvmdemo.domain.party.authentication.PartyAuthenticationRepository;
-import biz.digissance.graalvmdemo.http.OidcRegisterRequest;
 import biz.digissance.graalvmdemo.jpa.party.PartyMapper;
 import biz.digissance.graalvmdemo.jpa.party.authentication.JpaPartyAuthenticationRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.Serializable;
 import javax.sql.DataSource;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cache.Cache;
-import org.springframework.cache.CacheManager;
-import org.springframework.cache.concurrent.ConcurrentMapCacheManager;
+import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.access.PermissionEvaluator;
 import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;
 import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
 import org.springframework.security.authentication.AuthenticationProvider;
-import org.springframework.security.authentication.CachingUserDetailsService;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -26,21 +23,14 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserCache;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.cache.SpringCacheBasedUserCache;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
-import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
-import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
-import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
 import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
 
-//@EnableCaching
 @EnableWebSecurity
 @EnableMethodSecurity
 @Configuration(proxyBeanMethods = false)
@@ -51,9 +41,7 @@ public class SecurityConfig {
 
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
-
         return (web) -> web.ignoring()
-//                .requestMatchers("/actuator/**", "/css/**", "/images/**", "/js/**", "/webfonts/**")
                 .and().debug(securityDebugEnable);
     }
 
@@ -62,24 +50,8 @@ public class SecurityConfig {
         return PasswordEncoderFactories.createDelegatingPasswordEncoder();
     }
 
-    /*@Bean
-    public CacheManager cacheManager() {
-        return new ConcurrentMapCacheManager();
-    }
-
-    @Bean
-    public UserCache userCache(final CacheManager cacheManager) throws Exception {
-
-        Cache cache = (Cache) cacheManager.getCache("userCache");
-        return new SpringCacheBasedUserCache(cache);
-    }*/
-
     @Bean
     public UserDetailsService userDetailsService(final PartyAuthenticationRepository repository) {
-//        final var cachingUserDetailsService =
-//                new CachingUserDetailsService(new EmailPasswordUserDetailsService(repository));
-//        cachingUserDetailsService.setUserCache(userCache);
-//        return cachingUserDetailsService;
         return new EmailPasswordUserDetailsService(repository);
     }
 
@@ -89,8 +61,6 @@ public class SecurityConfig {
         final var daoAuthenticationProvider = new DaoAuthenticationProvider();
         daoAuthenticationProvider.setPasswordEncoder(passwordEncoder);
         daoAuthenticationProvider.setUserDetailsService(userDetailsService);
-//        daoAuthenticationProvider.setUserCache(
-//                new SpringCacheBasedUserCache(cacheManager.getCache("userDaoCache")));
         return daoAuthenticationProvider;
     }
 
@@ -100,81 +70,51 @@ public class SecurityConfig {
                                                    final UserDetailsService userDetailsService,
                                                    final PartyService partyService,
                                                    final PersistentTokenRepository persistentTokenRepository,
-                                                   final PartyAuthenticationRepository partyAuthRepository)
+                                                   final PartyAuthenticationRepository partyAuthRepository,
+                                                   final ObjectMapper objectMapper)
             throws Exception {
-//        http.getSharedObject(AuthenticationManagerBuilder.class).eraseCredentials(false);
+        final var SECURITY_CONTEXT_COOKIE_NAME = "J_SEC";
         return http
-                /*.securityContext(sec->sec.securityContextRepository(new SecurityContextRepository() {
-                    @Override
-                    public SecurityContext loadContext(final HttpRequestResponseHolder requestResponseHolder) {
-                        return null;
-                    }
-
-                    @Override
-                    public void saveContext(final SecurityContext context, final HttpServletRequest request,
-                                            final HttpServletResponse response) {
-
-                    }
-
-                    @Override
-                    public boolean containsContext(final HttpServletRequest request) {
-                        return false;
-                    }
-                }))*/
+                .securityContext(sec -> sec.securityContextRepository(
+                        new MySecurityContextRepository(objectMapper, SECURITY_CONTEXT_COOKIE_NAME)))
                 .authenticationProvider(daoAuthProvider)
                 .authorizeHttpRequests(p -> {
+                    p.requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll();
                     p.requestMatchers(
-                            "/", "/login", "/register/**", "/error", "/oauth2/**",
+                            "/", "/login/**", "/register/**", "/error", "/oauth2/**",
                             "/actuator/**", "/css/**", "/images/**", "/js/**", "/webfonts/**").permitAll();
                     p.anyRequest().authenticated();
                 })
                 .csrf().disable()
                 .rememberMe(rem -> {
-                    /*final var cache = cacheManager.getCache("rememberMeUserCache");
-                    final var allPurposeService = new CachingUserDetailsService(new AllPurposeUserDetailsService
-                    (partyAuthRepository,"mykey"));
-                    allPurposeService.setUserCache(new SpringCacheBasedUserCache(cache));
-                    */
                     rem.alwaysRemember(true);
                     rem.tokenRepository(persistentTokenRepository);
-//                    final var myRememberMeServices = new MyRememberMeServices("notUsed", userDetailsService, persistentTokenRepository);
-//                    myRememberMeServices.setAlwaysRemember(true);
-//                    rem.rememberMeServices(myRememberMeServices);
-//                    rem.userDetailsService(allPurposeService);
+                    rem.userDetailsService(new AllPurposeUserDetailsService(partyAuthRepository));
                 })
                 .formLogin(
                         form -> form
                                 .loginPage("/login")
                                 .loginProcessingUrl("/login")
                                 .defaultSuccessUrl("/")
-//                                .permitAll()
+                                .permitAll()
                 )
-//                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .oauth2Login(p -> {
-                    p.loginPage("/login");
-                    p.userInfoEndpoint(j -> {
-                        final var oidcUserService = new OidcUserService();
-                        j.oidcUserService(new OAuth2UserService<OidcUserRequest, OidcUser>() {
-                            @Override
-                            public OidcUser loadUser(final OidcUserRequest userRequest)
-                                    throws OAuth2AuthenticationException {
-                                final var oidcUser = oidcUserService.loadUser(userRequest);
-                                partyService.register(OidcRegisterRequest.builder()
-                                        .email(oidcUser.getEmail())
-                                        .firstName(oidcUser.getGivenName())
-                                        .lastName(oidcUser.getFamilyName())
-                                        .provider(userRequest.getClientRegistration().getClientName())
-                                        .build());
-                                return oidcUser;
-                            }
-                        });
-                    });
+                .logout(logout -> {
+                    logout.deleteCookies(SECURITY_CONTEXT_COOKIE_NAME);
+                    logout.permitAll();
+                })
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .oauth2Login(configurer -> {
+                    configurer.loginPage("/login");
+                    configurer.authorizationEndpoint(p -> p.authorizationRequestRepository(
+                            new MyOAuth2AuthorizationRequestAuthorizationRequestRepository(objectMapper)));
+                    configurer.userInfoEndpoint(p -> p.oidcUserService(
+                            new MyOidcUserRequestOidcUserOAuth2UserService(new OidcUserService(), partyService)));
                 })
                 .build();
     }
 
     @Bean
-    public PartyAuthenticationRepository emailPasswordPartyAuthenticationRepository(
+    public PartyAuthenticationRepository partyAuthenticationRepository(
             final JpaPartyAuthenticationRepository repository,
             final PartyMapper mapper) {
         return new DomainPartyAuthenticationRepository(repository, mapper);

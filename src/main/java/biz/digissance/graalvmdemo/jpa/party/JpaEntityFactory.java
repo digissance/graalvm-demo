@@ -31,29 +31,35 @@ public class JpaEntityFactory {
 
     @ObjectFactory
     public JpaAddressProperty create(AddressProperties addressProperties, @Context JpaParty context) {
-        return context.getAddressProperties().stream()
+        final var jpaAddressProperty = context.getAddressProperties().stream()
                 .filter(address -> address.getAddress().getAddress()
                         .equals(addressProperties.getAddress().getAddress()))
                 .findFirst().orElseGet(JpaAddressProperty::new);
+        jpaAddressProperty.setParty(context);
+        return jpaAddressProperty;
     }
 
     @ObjectFactory
     public JpaEmailPasswordPartyAuthentication create(EmailPasswordAuthentication authentication,
                                                       @Context JpaParty context) {
-        return context.getAuthentications().stream()
+        final var jpaEmailPasswordPartyAuthentication = context.getAuthentications().stream()
                 .filter(JpaEmailPasswordPartyAuthentication.class::isInstance)
                 .map(JpaEmailPasswordPartyAuthentication.class::cast)
                 .filter(auth -> auth.getUsername().equals(authentication.getEmailAddress()))
                 .findFirst().orElseGet(JpaEmailPasswordPartyAuthentication::new);
+        jpaEmailPasswordPartyAuthentication.setParty(context);
+        return jpaEmailPasswordPartyAuthentication;
     }
 
     @ObjectFactory
     public JpaOidcPartyAuthentication create(OidcAuthentication authentication, @Context JpaParty context) {
-        return context.getAuthentications().stream()
+        final var jpaOidcPartyAuthentication = context.getAuthentications().stream()
                 .filter(JpaOidcPartyAuthentication.class::isInstance)
                 .map(JpaOidcPartyAuthentication.class::cast)
                 .filter(auth -> auth.getUsername().equals(authentication.getUsername()))
                 .findFirst().orElseGet(JpaOidcPartyAuthentication::new);
+        jpaOidcPartyAuthentication.setParty(context);
+        return jpaOidcPartyAuthentication;
     }
 
     @ObjectFactory
@@ -76,31 +82,18 @@ public class JpaEntityFactory {
                 .findFirst().orElseGet(JpaGeographicAddress::new);
     }
 
-//    @ObjectFactory
-//    public JpaPartyRoleType create(PartyRoleType partyRoleType, @Context JpaParty context) {
-//        return context.getRoles().stream()
-//                .map(JpaPartyRole::getType)
-//                .filter(type -> type.getName().equals(partyRoleType.getName()))
-//                .findFirst()
-//                .orElseGet(() -> partyRoleTypeRepository.findByName(partyRoleType.getName())
-//                        .orElseGet(JpaPartyRoleType::new));
-//    }
-
     @ObjectFactory
     public JpaPartyRoleType create(PartyRoleType partyRoleType) {
         return partyRoleTypeRepository.findByName(partyRoleType.getName())
                 .orElseGet(JpaPartyRoleType::new);
     }
 
-//    @ObjectFactory
-//    public <T extends BaseEntity> T resolve(PartyRoleType sourceDto, @TargetType Class<T> type) {
-//                return partyRoleTypeRepository.findByName(sourceDto.getName())
-//                .orElseGet(JpaPartyRoleType::new);
-//    }
-
     @ObjectFactory
     public JpaPartyRole create(PartyRole partyRole, @Context JpaParty context) {
-        return context.getRoles().stream().filter(p -> p.getIdentifier().equals(partyRole.getIdentifier().getId()))
+        final var jpaPartyRole = context.getRoles().stream()
+                .filter(p -> p.getIdentifier().equals(partyRole.getIdentifier().getId()))
                 .findFirst().orElseGet(JpaPartyRole::new);
+        jpaPartyRole.setParty(context);
+        return jpaPartyRole;
     }
 }

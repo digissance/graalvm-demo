@@ -8,7 +8,7 @@ primary_region = "mad"
 processes = []
 
 [build]
-  image = "ghcr.io/digissance/graalvm-demo:0.0.23"
+  image = "ghcr.io/digissance/graalvm-demo:0.0.27"
 
 [[services]]
   internal_port = 8080

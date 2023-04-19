@@ -1,6 +1,16 @@
 version: "3.9"
 
 services:
+
+  nginx:
+    image: nginx:latest
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - www.backend.com
+    ports:
+      - "8080:8080"
+
   database:
     image: 'postgres:13.1-alpine'
     environment:
@@ -8,14 +18,17 @@ services:
       POSTGRES_PASSWORD: "Postgr@s321!"
     ports:
       - "5432:5432"
-  auth-server:
-    image: "ghcr.io/digissance/graalvm-demo:0.0.27-SNAPSHOT"
+  www.backend.com:
+    image: "ghcr.io/digissance/graalvm-demo:${TAG}"
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://database:5432/graalvm-demo
       SPRING_DATASOURCE_USERNAME: graalvm-demo
       SPRING_DATASOURCE_PASSWORD: "Postgr@s321!"
       SPRING_PROFILES_ACTIVE: dev
-    ports:
-      - "8080:8080"
+      GOOGLE_OAUTH_CLIENT_ID: ${GOOGLE_OAUTH_CLIENT_ID}
+      GOOGLE_OAUTH_CLIENT_SECRET: ${GOOGLE_OAUTH_CLIENT_SECRET}
+      SECURITY_DEBUG_ENABLED: "true"
+#    ports:
+#      - "8080:8080"
     depends_on:
       - database
