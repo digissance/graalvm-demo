@@ -68,6 +68,10 @@ class MySecurityContextRepository implements SecurityContextRepository {
 
     @Override
     public boolean containsContext(final HttpServletRequest request) {
-        return Arrays.stream(request.getCookies()).anyMatch(p -> p.getName().equals(SECURITY_CONTEXT_COOKIE_NAME));
+        return Optional.of(request).map(HttpServletRequest::getCookies)
+                .stream()
+                .flatMap(Arrays::stream)
+                .map(Cookie::getName)
+                .anyMatch(SECURITY_CONTEXT_COOKIE_NAME::equals);
     }
 }
