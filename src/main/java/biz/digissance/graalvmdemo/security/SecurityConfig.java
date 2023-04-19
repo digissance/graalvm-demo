@@ -131,6 +131,7 @@ public class SecurityConfig {
                 .rememberMe(rem -> {
                     rem.alwaysRemember(true);
                     rem.tokenRepository(persistentTokenRepository);
+                    rem.userDetailsService(new AllPurposeUserDetailsService(partyAuthRepository,"123456"));
                 })
                 .formLogin(
                         form -> form
@@ -146,8 +147,11 @@ public class SecurityConfig {
                     configurer.loginPage("/login");
                     configurer.authorizationEndpoint(p -> p.authorizationRequestRepository(
                             new MyOAuth2AuthorizationRequestAuthorizationRequestRepository(objectMapper)));
-                    configurer.userInfoEndpoint(p -> p.oidcUserService(
-                            new MyOidcUserRequestOidcUserOAuth2UserService(new OidcUserService(), partyService)));
+                    configurer.userInfoEndpoint(p -> {
+
+                        p.oidcUserService(
+                                new MyOidcUserRequestOidcUserOAuth2UserService(new OidcUserService(), partyService));
+                    });
                 })
                 .build();
     }
