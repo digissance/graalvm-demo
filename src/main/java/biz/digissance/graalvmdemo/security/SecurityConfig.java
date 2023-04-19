@@ -76,7 +76,7 @@ public class SecurityConfig {
         final var SECURITY_CONTEXT_COOKIE_NAME = "J_SEC";
         return http
                 .securityContext(sec -> sec.securityContextRepository(
-                        new MySecurityContextRepository(objectMapper, SECURITY_CONTEXT_COOKIE_NAME)))
+                        new MySecurityContextRepository(SECURITY_CONTEXT_COOKIE_NAME)))
                 .authenticationProvider(daoAuthProvider)
                 .authorizeHttpRequests(p -> {
                     p.requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll();
@@ -106,7 +106,7 @@ public class SecurityConfig {
                 .oauth2Login(configurer -> {
                     configurer.loginPage("/login");
                     configurer.authorizationEndpoint(p -> p.authorizationRequestRepository(
-                            new MyOAuth2AuthorizationRequestAuthorizationRequestRepository(objectMapper)));
+                            new MyOAuth2AuthorizationRequestAuthorizationRequestRepository()));
                     configurer.userInfoEndpoint(p -> p.oidcUserService(
                             new MyOidcUserRequestOidcUserOAuth2UserService(new OidcUserService(), partyService)));
                 })
