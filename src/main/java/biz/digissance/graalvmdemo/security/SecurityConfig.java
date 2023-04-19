@@ -21,6 +21,7 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
@@ -30,7 +31,6 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
 import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
 
-//@EnableCaching
 @EnableWebSecurity
 @EnableMethodSecurity
 @Configuration(proxyBeanMethods = false)
@@ -41,10 +41,7 @@ public class SecurityConfig {
 
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
-
         return (web) -> web.ignoring()
-//                .requestMatchers(PathRequest.toH2Console())
-//                .requestMatchers("/actuator/**", "/css/**", "/images/**", "/js/**", "/webfonts/**")
                 .and().debug(securityDebugEnable);
     }
 
@@ -76,49 +73,10 @@ public class SecurityConfig {
                                                    final PartyAuthenticationRepository partyAuthRepository,
                                                    final ObjectMapper objectMapper)
             throws Exception {
+        final var SECURITY_CONTEXT_COOKIE_NAME = "J_SEC";
         return http
-                .securityContext(sec -> {
-//                    sec.securityContextRepository(new RequestAttributeSecurityContextRepository());
-                })
-//                .securityContext(sec -> sec.securityContextRepository(new SecurityContextRepository() {
-//                    private final ObjectMapper mapper = objectMapper;
-//
-//                    @Override
-//                    public SecurityContext loadContext(final HttpRequestResponseHolder requestResponseHolder) {
-//
-//                        return Optional.ofNullable(requestResponseHolder.getRequest().getCookies()).stream()
-//                                .flatMap(Arrays::stream)
-//                                .filter(p -> p.getName().equals("J_SEC"))
-//                                .findFirst()
-//                                .map(p -> {
-//                                    try {
-//                                        return mapper.readValue(Base64.getDecoder().decode(p.getValue()),
-//                                                SecurityContextImpl.class);
-//                                    } catch (IOException e) {
-//                                        throw new RuntimeException(e);
-//                                    }
-//                                })
-//                                .orElseGet(SecurityContextImpl::new);
-//                    }
-//
-//                    @Override
-//                    public void saveContext(final SecurityContext context, final HttpServletRequest request,
-//                                            final HttpServletResponse response) {
-//                        final String secContext;
-//                        try {
-//                            secContext = Base64.getEncoder().encodeToString(mapper.writeValueAsBytes(context));
-//                            Cookie cookie = new Cookie("J_SEC", secContext);
-//                            response.addCookie(cookie);
-//                        } catch (JsonProcessingException e) {
-//                            e.printStackTrace();
-//                        }
-//                    }
-//
-//                    @Override
-//                    public boolean containsContext(final HttpServletRequest request) {
-//                        return Arrays.stream(request.getCookies()).anyMatch(p -> p.getName().equals("JSEC"));
-//                    }
-//                }))
+                .securityContext(sec -> sec.securityContextRepository(
+                        new MySecurityContextRepository(objectMapper, SECURITY_CONTEXT_COOKIE_NAME)))
                 .authenticationProvider(daoAuthProvider)
                 .authorizeHttpRequests(p -> {
                     p.requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll();
@@ -131,33 +89,32 @@ public class SecurityConfig {
                 .rememberMe(rem -> {
                     rem.alwaysRemember(true);
                     rem.tokenRepository(persistentTokenRepository);
-                    rem.userDetailsService(new AllPurposeUserDetailsService(partyAuthRepository,"123456"));
+                    rem.userDetailsService(new AllPurposeUserDetailsService(partyAuthRepository));
                 })
                 .formLogin(
                         form -> form
                                 .loginPage("/login")
                                 .loginProcessingUrl("/login")
                                 .defaultSuccessUrl("/")
-//                                .permitAll()
+                                .permitAll()
                 )
-                .sessionManagement(session -> {
-//                    session.sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+                .logout(logout -> {
+                    logout.deleteCookies(SECURITY_CONTEXT_COOKIE_NAME);
+                    logout.permitAll();
                 })
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .oauth2Login(configurer -> {
                     configurer.loginPage("/login");
                     configurer.authorizationEndpoint(p -> p.authorizationRequestRepository(
                             new MyOAuth2AuthorizationRequestAuthorizationRequestRepository(objectMapper)));
-                    configurer.userInfoEndpoint(p -> {
-
-                        p.oidcUserService(
-                                new MyOidcUserRequestOidcUserOAuth2UserService(new OidcUserService(), partyService));
-                    });
+                    configurer.userInfoEndpoint(p -> p.oidcUserService(
+                            new MyOidcUserRequestOidcUserOAuth2UserService(new OidcUserService(), partyService)));
                 })
                 .build();
     }
 
     @Bean
-    public PartyAuthenticationRepository emailPasswordPartyAuthenticationRepository(
+    public PartyAuthenticationRepository partyAuthenticationRepository(
             final JpaPartyAuthenticationRepository repository,
             final PartyMapper mapper) {
         return new DomainPartyAuthenticationRepository(repository, mapper);
