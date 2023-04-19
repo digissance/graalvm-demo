@@ -41,7 +41,7 @@ public class MyOAuth2AuthorizationRequestAuthorizationRequestRepository
         Cookie cookie = new Cookie(OAUTH_COOKIE_NAME, serializeCookie(authorizationRequest));
 //        cookie.setHttpOnly(true);
 //        cookie.setSecure(true);
-//        cookie.setMaxAge(60);
+        cookie.setMaxAge(60);
         cookie.setPath("/");
         response.addCookie(cookie);
     }
@@ -55,19 +55,20 @@ public class MyOAuth2AuthorizationRequestAuthorizationRequestRepository
     @Override
     public OAuth2AuthorizationRequest removeAuthorizationRequest(
             final HttpServletRequest request, final HttpServletResponse response) {
-        Cookie cookie = new Cookie(OAUTH_COOKIE_NAME, "");
-//        cookie.setHttpOnly(true);
-//        cookie.setSecure(true);
-//        cookie.setMaxAge(0);
-        cookie.setPath("/");
-        response.addCookie(cookie);
-        return Optional.ofNullable(request.getCookies())
+        final var oAuth2AuthorizationRequest = Optional.ofNullable(request.getCookies())
                 .map(Arrays::stream)
                 .flatMap(p -> p
                         .filter(q -> q.getName().equalsIgnoreCase(OAUTH_COOKIE_NAME))
                         .findFirst())
                 .map(this::deserializeCookie)
                 .orElse(null);
+        Cookie cookie = new Cookie(OAUTH_COOKIE_NAME, "");
+//        cookie.setHttpOnly(true);
+//        cookie.setSecure(true);
+        cookie.setMaxAge(0);
+        cookie.setPath("/");
+        response.addCookie(cookie);
+        return oAuth2AuthorizationRequest;
     }
 
     @SneakyThrows
