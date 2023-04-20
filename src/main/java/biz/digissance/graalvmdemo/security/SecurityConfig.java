@@ -8,6 +8,7 @@ import biz.digissance.graalvmdemo.jpa.party.authentication.JpaPartyAuthenticatio
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.Serializable;
 import javax.sql.DataSource;
+import org.springframework.aot.hint.annotation.RegisterReflectionForBinding;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
@@ -27,6 +28,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
+import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
 import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
@@ -34,6 +36,7 @@ import org.springframework.security.web.authentication.rememberme.PersistentToke
 @EnableWebSecurity
 @EnableMethodSecurity
 @Configuration(proxyBeanMethods = false)
+@RegisterReflectionForBinding({OAuth2AuthorizationRequest.class, MyOAuth2AuthorizationRequest.class})
 public class SecurityConfig {
 
     @Value("${SECURITY_DEBUG_ENABLED:false}")
@@ -76,7 +79,7 @@ public class SecurityConfig {
         final var SECURITY_CONTEXT_COOKIE_NAME = "J_SEC";
         return http
                 .securityContext(sec -> sec.securityContextRepository(
-                        new MySecurityContextRepository(SECURITY_CONTEXT_COOKIE_NAME)))
+                        new MySecurityContextRepository(objectMapper, SECURITY_CONTEXT_COOKIE_NAME)))
                 .authenticationProvider(daoAuthProvider)
                 .authorizeHttpRequests(p -> {
                     p.requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll();
@@ -106,7 +109,7 @@ public class SecurityConfig {
                 .oauth2Login(configurer -> {
                     configurer.loginPage("/login");
                     configurer.authorizationEndpoint(p -> p.authorizationRequestRepository(
-                            new MyOAuth2AuthorizationRequestAuthorizationRequestRepository()));
+                            new MyOAuth2AuthorizationRequestAuthorizationRequestRepository(objectMapper)));
                     configurer.userInfoEndpoint(p -> p.oidcUserService(
                             new MyOidcUserRequestOidcUserOAuth2UserService(new OidcUserService(), partyService)));
                 })

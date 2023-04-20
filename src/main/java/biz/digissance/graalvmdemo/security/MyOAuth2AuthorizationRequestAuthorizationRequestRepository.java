@@ -1,14 +1,13 @@
 package biz.digissance.graalvmdemo.security;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.HashSet;
 import java.util.Optional;
 import lombok.SneakyThrows;
 import org.springframework.security.oauth2.client.web.AuthorizationRequestRepository;
@@ -17,10 +16,14 @@ import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequ
 public class MyOAuth2AuthorizationRequestAuthorizationRequestRepository
         implements AuthorizationRequestRepository<OAuth2AuthorizationRequest> {
     public static final String OAUTH_COOKIE_NAME = "OAUTH";
+    private final ObjectMapper mapper;
+
+    public MyOAuth2AuthorizationRequestAuthorizationRequestRepository(final ObjectMapper objectMapper) {
+        this.mapper = objectMapper;
+    }
 
     @Override
-    public OAuth2AuthorizationRequest loadAuthorizationRequest(
-            final HttpServletRequest request) {
+    public OAuth2AuthorizationRequest loadAuthorizationRequest(final HttpServletRequest request) {
         return null;
     }
 
@@ -40,14 +43,16 @@ public class MyOAuth2AuthorizationRequestAuthorizationRequestRepository
 
     @SneakyThrows
     private String serializeCookie(final OAuth2AuthorizationRequest authorizationRequest) {
-        try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
-            ObjectOutputStream out = null;
-            out = new ObjectOutputStream(bos);
-            out.writeObject(authorizationRequest);
-            out.flush();
-            byte[] yourBytes = bos.toByteArray();
-            return Base64.getEncoder().encodeToString(yourBytes);
-        }
+        final var toCookie = new MyOAuth2AuthorizationRequest();
+        toCookie.setAuthorizationUri(authorizationRequest.getAuthorizationUri());
+        toCookie.setClientId(authorizationRequest.getClientId());
+        toCookie.setRedirectUri(authorizationRequest.getRedirectUri());
+        toCookie.setScopes(new ArrayList<>(authorizationRequest.getScopes()));
+        toCookie.setState(authorizationRequest.getState());
+        toCookie.setAdditionalParameters(authorizationRequest.getAdditionalParameters());
+        toCookie.setAttributes(authorizationRequest.getAttributes());
+        toCookie.setAuthorizationRequestUri(authorizationRequest.getAuthorizationRequestUri());
+        return encodeBase64(mapper.writeValueAsBytes(toCookie));
     }
 
     @Override
@@ -71,10 +76,24 @@ public class MyOAuth2AuthorizationRequestAuthorizationRequestRepository
 
     @SneakyThrows
     private OAuth2AuthorizationRequest deserializeCookie(final Cookie cookie) {
+        final var fromCookie = mapper.readValue(decodeBase64(cookie.getValue()), MyOAuth2AuthorizationRequest.class);
+        return OAuth2AuthorizationRequest.authorizationCode()
+                .authorizationUri(fromCookie.getAuthorizationUri())
+                .clientId(fromCookie.getClientId())
+                .redirectUri(fromCookie.getRedirectUri())
+                .scopes(new HashSet<>(fromCookie.getScopes()))
+                .state(fromCookie.getState())
+                .additionalParameters(fromCookie.getAdditionalParameters())
+                .attributes(fromCookie.getAttributes())
+                .authorizationRequestUri(fromCookie.getAuthorizationRequestUri())
+                .build();
+    }
 
-        ByteArrayInputStream bis = new ByteArrayInputStream(Base64.getDecoder().decode(cookie.getValue().getBytes()));
-        try (ObjectInputStream ois = new ObjectInputStream(bis)) {
-            return (OAuth2AuthorizationRequest) ois.readObject();
-        }
+    private String encodeBase64(final byte[] cookie) {
+        return Base64.getEncoder().encodeToString(cookie);
+    }
+
+    private byte[] decodeBase64(final String cookie) {
+        return Base64.getDecoder().decode(cookie);
     }
 }
