@@ -51,13 +51,13 @@ public abstract class JpaParty extends BaseEntity {
 
     private String name;
 
-    @OneToMany(mappedBy = "party", orphanRemoval = true, cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "party", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<JpaAddressProperty> addressProperties = new HashSet<>();
 
-    @OneToMany(mappedBy = "party", orphanRemoval = true, cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "party", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<JpaPartyAuthentication> authentications = new HashSet<>();
 
-    @OneToMany(mappedBy = "party", orphanRemoval = true, cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "party", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<JpaPartyRole> roles = new HashSet<>();
 
     @PrePersist

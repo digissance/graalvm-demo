@@ -5,7 +5,6 @@ import biz.digissance.graalvmdemo.jpa.party.JpaParty;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.ManyToOne;
 import java.util.HashSet;
 import java.util.Set;
@@ -19,10 +18,10 @@ import lombok.ToString;
 @ToString
 public class JpaAddressProperty extends BaseEntity {
 
-    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @ManyToOne(optional = false)
     private JpaParty party;
 
-    @ManyToOne(optional = false, cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @ManyToOne(optional = false, cascade = CascadeType.ALL)
     private JpaAddress address;
 
     @ElementCollection
