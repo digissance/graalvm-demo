@@ -67,6 +67,8 @@ class MySecurityContextRepository implements SecurityContextRepository {
         secContext = Base64.getEncoder().encodeToString(mapper.writeValueAsBytes(sec));
         Cookie cookie = new Cookie(SECURITY_CONTEXT_COOKIE_NAME, secContext);
         cookie.setPath("/");
+        cookie.setHttpOnly(true);
+        cookie.setSecure(true);
         response.addCookie(cookie);
     }
 
