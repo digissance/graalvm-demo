@@ -1,6 +1,5 @@
 package biz.digissance.graalvmdemo.jpa.party;
 
-import biz.digissance.graalvmdemo.jpa.party.person.JpaPerson;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -14,6 +13,7 @@ public interface JpaPartyRepository extends JpaRepository<JpaParty, PartyPK> {
     @Query("select p from JpaParty p " +
             "inner join fetch p.authentications auth " +
             "inner join fetch p.addressProperties ap " +
+            "inner join fetch ap.use apu " +
             "inner join fetch ap.address address " +
             "inner join fetch p.roles role " +
             "inner join fetch role.type where auth.username = ?1")

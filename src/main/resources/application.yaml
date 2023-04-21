@@ -12,7 +12,7 @@ spring:
 #    defer-datasource-initialization: true
     open-in-view: false
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
   security:
     oauth2:
       client:

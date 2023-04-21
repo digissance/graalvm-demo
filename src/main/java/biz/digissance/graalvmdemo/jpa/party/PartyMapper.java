@@ -16,6 +16,7 @@ import biz.digissance.graalvmdemo.jpa.party.authentication.JpaOidcPartyAuthentic
 import biz.digissance.graalvmdemo.jpa.party.authentication.JpaPartyAuthentication;
 import biz.digissance.graalvmdemo.jpa.party.organization.JpaOrganization;
 import biz.digissance.graalvmdemo.jpa.party.person.JpaPerson;
+import biz.digissance.graalvmdemo.jpa.party.person.JpaPersonName;
 import biz.digissance.graalvmdemo.jpa.party.role.JpaPartyRole;
 import java.util.Collection;
 import java.util.Optional;
@@ -47,6 +48,7 @@ import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 import org.mapstruct.SubclassExhaustiveStrategy;
 import org.mapstruct.SubclassMapping;
+import org.springframework.beans.factory.annotation.Autowired;
 
 @Mapper(componentModel = "spring",
         uses = {DateTimeMapper.class, JpaEntityFactory.class},
@@ -55,6 +57,9 @@ import org.mapstruct.SubclassMapping;
         nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE
 )
 public abstract class PartyMapper implements LazyLoadingAwareMapper {
+
+    @Autowired
+    private JpaEntityFactory entityFactory;
 
     @SubclassMapping(target = JpaPerson.class, source = Person.class)
     @SubclassMapping(target = JpaOrganization.class, source = Organization.class)

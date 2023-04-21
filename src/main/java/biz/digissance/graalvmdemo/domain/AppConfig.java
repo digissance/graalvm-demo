@@ -7,6 +7,7 @@ import biz.digissance.graalvmdemo.domain.party.PersonRepository;
 import biz.digissance.graalvmdemo.jpa.party.JpaPartyRepository;
 import biz.digissance.graalvmdemo.jpa.party.PartyMapper;
 import biz.digissance.graalvmdemo.jpa.party.person.JpaPersonRepository;
+import biz.digissance.graalvmdemo.jpa.party.role.JpaPartyRoleTypeRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -18,8 +19,9 @@ public class AppConfig {
     public PersonRepository personRepository(
             final JpaPersonRepository jpaPersonRepository,
             final PartyMapper partyMapper,
-            final JpaPartyRepository partyRepository) {
-        return new DomainPersonRepository(jpaPersonRepository, partyRepository, partyMapper);
+            final JpaPartyRepository partyRepository,
+            final JpaPartyRoleTypeRepository partyRoleTypeRepository) {
+        return new DomainPersonRepository(jpaPersonRepository, partyRepository, partyRoleTypeRepository, partyMapper);
     }
 
     @Bean

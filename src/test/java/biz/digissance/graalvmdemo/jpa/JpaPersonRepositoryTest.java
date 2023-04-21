@@ -111,7 +111,8 @@ class JpaPersonRepositoryTest {
 
     @BeforeEach
     void setUp() {
-        personRepository = new DomainPersonRepository(jpaPersonRepository, jpaPartyRepository, partyMapper);
+        personRepository = new DomainPersonRepository(jpaPersonRepository, jpaPartyRepository, partyRoleTypeRepository,
+                partyMapper);
     }
 
     @AfterEach

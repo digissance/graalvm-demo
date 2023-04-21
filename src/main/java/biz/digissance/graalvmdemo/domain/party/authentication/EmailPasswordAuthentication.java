@@ -5,7 +5,6 @@ import lombok.NonNull;
 import lombok.ToString;
 import lombok.Value;
 import lombok.experimental.SuperBuilder;
-import net.liccioni.archetypes.party.Party;
 import net.liccioni.archetypes.party.PartyAuthentication;
 
 @Value
@@ -16,5 +15,6 @@ public class EmailPasswordAuthentication extends PartyAuthentication {
     @NonNull
     String emailAddress;
     @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     String password;
 }
