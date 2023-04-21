@@ -34,8 +34,8 @@ public class MyOAuth2AuthorizationRequestAuthorizationRequestRepository
             final HttpServletResponse response) {
 
         Cookie cookie = new Cookie(OAUTH_COOKIE_NAME, serializeCookie(authorizationRequest));
-//        cookie.setHttpOnly(true);
-//        cookie.setSecure(true);
+        cookie.setHttpOnly(true);
+        cookie.setSecure(true);
         cookie.setMaxAge(60);
         cookie.setPath("/");
         response.addCookie(cookie);
@@ -66,8 +66,8 @@ public class MyOAuth2AuthorizationRequestAuthorizationRequestRepository
                 .map(this::deserializeCookie)
                 .orElse(null);
         Cookie cookie = new Cookie(OAUTH_COOKIE_NAME, "");
-//        cookie.setHttpOnly(true);
-//        cookie.setSecure(true);
+        cookie.setHttpOnly(true);
+        cookie.setSecure(true);
         cookie.setMaxAge(0);
         cookie.setPath("/");
         response.addCookie(cookie);
