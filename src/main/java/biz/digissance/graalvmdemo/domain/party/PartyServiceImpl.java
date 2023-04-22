@@ -1,6 +1,5 @@
 package biz.digissance.graalvmdemo.domain.party;
 
-import biz.digissance.graalvmdemo.domain.party.authentication.EmailPasswordAuthentication;
 import biz.digissance.graalvmdemo.http.OidcRegisterRequest;
 import biz.digissance.graalvmdemo.http.RegisterRequest;
 import biz.digissance.graalvmdemo.jpa.party.PartyMapper;
@@ -10,14 +9,14 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Transactional
 public class PartyServiceImpl implements PartyService {
-    private final PersonRepository personRepository;
+    private final PartyRepository partyRepository;
     private final PartyMapper partyMapper;
     private final PasswordEncoder passwordEncoder;
 
-    public PartyServiceImpl(final PersonRepository personRepository,
+    public PartyServiceImpl(final PartyRepository partyRepository,
                             final PartyMapper partyMapper,
                             final PasswordEncoder passwordEncoder) {
-        this.personRepository = personRepository;
+        this.partyRepository = partyRepository;
         this.partyMapper = partyMapper;
         this.passwordEncoder = passwordEncoder;
     }
@@ -31,12 +30,12 @@ public class PartyServiceImpl implements PartyService {
 //                .emailAddress(registerRequest.getEmail())
 //                .password(password)
 //                .build());
-        return personRepository.save(registerRequest, password);
+        return partyRepository.save(registerRequest, password);
     }
 
     @Override
     public Party register(final OidcRegisterRequest registerRequest) {
 
-        return personRepository.save(registerRequest);
+        return partyRepository.save(registerRequest);
     }
 }

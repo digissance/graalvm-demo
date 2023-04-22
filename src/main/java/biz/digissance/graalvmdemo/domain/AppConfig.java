@@ -1,9 +1,9 @@
 package biz.digissance.graalvmdemo.domain;
 
-import biz.digissance.graalvmdemo.domain.party.DomainPersonRepository;
+import biz.digissance.graalvmdemo.domain.party.DomainPartyRepository;
 import biz.digissance.graalvmdemo.domain.party.PartyService;
 import biz.digissance.graalvmdemo.domain.party.PartyServiceImpl;
-import biz.digissance.graalvmdemo.domain.party.PersonRepository;
+import biz.digissance.graalvmdemo.domain.party.PartyRepository;
 import biz.digissance.graalvmdemo.jpa.party.JpaPartyRepository;
 import biz.digissance.graalvmdemo.jpa.party.PartyMapper;
 import biz.digissance.graalvmdemo.jpa.party.person.JpaPersonRepository;
@@ -16,18 +16,18 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 public class AppConfig {
 
     @Bean
-    public PersonRepository personRepository(
+    public PartyRepository personRepository(
             final JpaPersonRepository jpaPersonRepository,
             final PartyMapper partyMapper,
             final JpaPartyRepository partyRepository,
             final JpaPartyRoleTypeRepository partyRoleTypeRepository) {
-        return new DomainPersonRepository(jpaPersonRepository, partyRepository, partyRoleTypeRepository, partyMapper);
+        return new DomainPartyRepository(jpaPersonRepository, partyRepository, partyRoleTypeRepository, partyMapper);
     }
 
     @Bean
-    public PartyService partyService(final PersonRepository personRepository,
+    public PartyService partyService(final PartyRepository partyRepository,
                                      final PartyMapper partyMapper,
                                      final PasswordEncoder passwordEncoder) {
-        return new PartyServiceImpl(personRepository, partyMapper, passwordEncoder);
+        return new PartyServiceImpl(partyRepository, partyMapper, passwordEncoder);
     }
 }

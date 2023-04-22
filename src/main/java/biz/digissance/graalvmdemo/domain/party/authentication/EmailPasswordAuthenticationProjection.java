@@ -10,6 +10,8 @@ import net.liccioni.archetypes.relationship.PartyRole;
 @Builder
 public class EmailPasswordAuthenticationProjection {
 
+    String partyIdentifier;
+
     @ToString.Exclude
     String password;
 

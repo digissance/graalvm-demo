@@ -19,7 +19,7 @@ public class EmailPasswordUserDetailsService implements UserDetailsService {
     public UserDetails loadUserByUsername(final String username) throws UsernameNotFoundException {
         final var entry = repository.findPasswordAuthByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException(username));
-        return User.withUsername(username)
+        return User.withUsername(entry.getPartyIdentifier())
                 .password(entry.getPassword())
                 .authorities(entry.getRoles().stream()
                         .map(PartyRole::getName)
