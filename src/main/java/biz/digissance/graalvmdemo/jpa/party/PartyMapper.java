@@ -16,7 +16,6 @@ import biz.digissance.graalvmdemo.jpa.party.authentication.JpaOidcPartyAuthentic
 import biz.digissance.graalvmdemo.jpa.party.authentication.JpaPartyAuthentication;
 import biz.digissance.graalvmdemo.jpa.party.organization.JpaOrganization;
 import biz.digissance.graalvmdemo.jpa.party.person.JpaPerson;
-import biz.digissance.graalvmdemo.jpa.party.person.JpaPersonName;
 import biz.digissance.graalvmdemo.jpa.party.role.JpaPartyRole;
 import java.util.Collection;
 import java.util.Optional;
@@ -193,7 +192,7 @@ public abstract class PartyMapper implements LazyLoadingAwareMapper {
         target.getRoles().forEach(p -> p.setParty(target));
     }
 
-    public Person toPersonDomain(RegisterRequest registerRequest, final String password) {
+    public Person toPersonDomain(RegisterRequest registerRequest) {
         final EmailAddress emailAddress = EmailAddress.builder()
                 .emailAddress(registerRequest.getEmail())
                 .build();

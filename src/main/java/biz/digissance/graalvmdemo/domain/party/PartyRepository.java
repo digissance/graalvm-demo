@@ -9,7 +9,7 @@ import net.liccioni.archetypes.address.AddressProperties;
 import net.liccioni.archetypes.party.Party;
 import net.liccioni.archetypes.party.Person;
 
-public interface PersonRepository {
+public interface PartyRepository {
 
     Party save(final Party party);
 
@@ -17,7 +17,7 @@ public interface PersonRepository {
 
     List<Person> findAll();
 
-    Optional<Person> findByIdentifier(final String identifier);
+    Optional<Party> findByIdentifier(final String identifier);
 
     Optional<Party> findByAuthenticationUserName(final String username);
 

@@ -21,6 +21,7 @@ public class DomainPartyAuthenticationRepository implements PartyAuthenticationR
     public Optional<EmailPasswordAuthenticationProjection> findPasswordAuthByUsername(final String username) {
         return repository.findPasswordAuthByUsername(username)
                 .map(p -> EmailPasswordAuthenticationProjection.builder()
+                        .partyIdentifier(p.getParty().getIdentifier())
                         .password(p.getPassword())
                         .roles(mapper.toPartyDomain(p.getParty()).getRoles())
                         .build());

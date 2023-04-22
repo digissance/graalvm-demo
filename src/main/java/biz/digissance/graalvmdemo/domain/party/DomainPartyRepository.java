@@ -4,34 +4,28 @@ import biz.digissance.graalvmdemo.domain.party.authentication.EmailPasswordAuthe
 import biz.digissance.graalvmdemo.domain.party.authentication.OidcAuthentication;
 import biz.digissance.graalvmdemo.http.OidcRegisterRequest;
 import biz.digissance.graalvmdemo.http.RegisterRequest;
-import biz.digissance.graalvmdemo.jpa.party.JpaParty;
 import biz.digissance.graalvmdemo.jpa.party.JpaPartyRepository;
 import biz.digissance.graalvmdemo.jpa.party.PartyMapper;
-import biz.digissance.graalvmdemo.jpa.party.address.JpaAddressProperty;
-import biz.digissance.graalvmdemo.jpa.party.address.JpaEmailAddress;
 import biz.digissance.graalvmdemo.jpa.party.person.JpaPerson;
-import biz.digissance.graalvmdemo.jpa.party.person.JpaPersonName;
 import biz.digissance.graalvmdemo.jpa.party.person.JpaPersonRepository;
-import biz.digissance.graalvmdemo.jpa.party.role.JpaPartyRole;
 import biz.digissance.graalvmdemo.jpa.party.role.JpaPartyRoleTypeRepository;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 import net.liccioni.archetypes.party.Party;
 import net.liccioni.archetypes.party.Person;
 import net.liccioni.archetypes.uniqueid.UniqueIdentifier;
 
-public class DomainPersonRepository implements PersonRepository {
+public class DomainPartyRepository implements PartyRepository {
     private final JpaPersonRepository repository;
     private final JpaPartyRepository partyRepository;
     private final JpaPartyRoleTypeRepository partyRoleTypeRepository;
     private final PartyMapper mapper;
 
-    public DomainPersonRepository(final JpaPersonRepository jpaPersonRepository,
-                                  final JpaPartyRepository partyRepository,
-                                  final JpaPartyRoleTypeRepository partyRoleTypeRepository,
-                                  final PartyMapper mapper) {
+    public DomainPartyRepository(final JpaPersonRepository jpaPersonRepository,
+                                 final JpaPartyRepository partyRepository,
+                                 final JpaPartyRoleTypeRepository partyRoleTypeRepository,
+                                 final PartyMapper mapper) {
         this.repository = jpaPersonRepository;
         this.partyRepository = partyRepository;
         this.partyRoleTypeRepository = partyRoleTypeRepository;
@@ -52,16 +46,12 @@ public class DomainPersonRepository implements PersonRepository {
     @Override
     public List<Person> findAll() {
         return repository.findAll().stream()
-                .map((JpaPerson personDto) -> {
-                    return (Person) mapper.toPartyDomain(personDto);
-                }).collect(Collectors.toList());
+                .map((JpaPerson personDto) -> (Person) mapper.toPartyDomain(personDto)).collect(Collectors.toList());
     }
 
     @Override
-    public Optional<Person> findByIdentifier(final String identifier) {
-        return repository.findByIdentifier(identifier).map((JpaPerson personDto) -> {
-            return (Person) mapper.toPartyDomain(personDto);
-        });
+    public Optional<Party> findByIdentifier(final String identifier) {
+        return repository.findByIdentifier(identifier).map(mapper::toPartyDomain);
     }
 
     @Override
@@ -72,7 +62,7 @@ public class DomainPersonRepository implements PersonRepository {
     @Override
     public Party save(final RegisterRequest registerRequest, final String password) {
         final var person = partyRepository.findPartyByUsername(registerRequest.getEmail())
-                .orElseGet(() -> mapper.toPartyJpa(mapper.toPersonDomain(registerRequest, password)));
+                .orElseGet(() -> mapper.toPartyJpa(mapper.toPersonDomain(registerRequest)));
         final var auths = person.getAuthentications().stream()
                 .map(mapper::toAuthDomain)
                 .collect(Collectors.toSet());

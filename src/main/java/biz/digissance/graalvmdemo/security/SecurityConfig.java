@@ -1,5 +1,6 @@
 package biz.digissance.graalvmdemo.security;
 
+import biz.digissance.graalvmdemo.domain.party.PartyRepository;
 import biz.digissance.graalvmdemo.domain.party.PartyService;
 import biz.digissance.graalvmdemo.domain.party.authentication.DomainPartyAuthenticationRepository;
 import biz.digissance.graalvmdemo.domain.party.authentication.PartyAuthenticationRepository;
@@ -73,7 +74,7 @@ public class SecurityConfig {
                                                    final UserDetailsService userDetailsService,
                                                    final PartyService partyService,
                                                    final PersistentTokenRepository persistentTokenRepository,
-                                                   final PartyAuthenticationRepository partyAuthRepository,
+                                                   final PartyRepository partyRepository,
                                                    final ObjectMapper objectMapper)
             throws Exception {
         final var SECURITY_CONTEXT_COOKIE_NAME = "J_SEC";
@@ -92,7 +93,7 @@ public class SecurityConfig {
                 .rememberMe(rem -> {
                     rem.alwaysRemember(true);
                     rem.tokenRepository(persistentTokenRepository);
-                    rem.userDetailsService(new AllPurposeUserDetailsService(partyAuthRepository));
+                    rem.userDetailsService(new AllPurposeUserDetailsService(partyRepository));
                 })
                 .formLogin(
                         form -> form
